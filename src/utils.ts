@@ -1,7 +1,7 @@
 class Utils {
-  public static readonly BASE_GRAMS = 100;
-  public static readonly SUB_TABLE_COUNT = 3;
-  public static readonly TABLE_ROW_SPAN = 10;
+  public static readonly BASE_GRAMS: number = 100;
+  public static readonly SUB_TABLE_COUNT: number = 3;
+  public static readonly TABLE_ROW_SPAN: number = 10;
 
   /**
    * Separa los gramos de las unidades caseras.
@@ -18,9 +18,9 @@ class Utils {
     }
 
     if (typeof gramsAndUnit === "string") {
-      const split = gramsAndUnit.split(" (");
+      const split: string[] = gramsAndUnit.split(" (");
       if (split.length > 1) {
-        const grams = parseInt(split[0], 10);
+        const grams: number = parseInt(split[0], 10);
         if (isNaN(grams)) {
           throw new Error("El valor de gramos no es un número válido.");
         }
@@ -45,8 +45,8 @@ class Utils {
    * @returns {Array<string>} Un array con los rangos de inicio de las subtablas.
    */
   static generateSubTableStartCells(startRow: number, startCol: number): Array<string> {
-    const subTableStartCells = [];
-    for (let i = 0; i < this.SUB_TABLE_COUNT; i++) {
+    const subTableStartCells: string[] = [];
+    for (let i: number = 0; i < this.SUB_TABLE_COUNT; i++) {
       subTableStartCells.push(
         `${this.getLetter(startCol)}${startRow}:${this.getLetter(startCol + 2)}${
           startRow + this.TABLE_ROW_SPAN
@@ -63,7 +63,8 @@ class Utils {
    * @returns {string} La notación A1 del rango si se encuentra, de lo contrario una cadena vacía.
    */
   static getA1AnotationByRangeName(rangeName: string): string {
-    const range = SpreadsheetApp.getActiveSpreadsheet().getRangeByName(rangeName);
+    const range: GoogleAppsScript.Spreadsheet.Range =
+      SpreadsheetApp.getActiveSpreadsheet().getRangeByName(rangeName);
     if (!range) {
       return "";
     }
@@ -123,12 +124,12 @@ class Utils {
       return "";
     }
 
-    const homeUnitParts = ingredient.homeUnit.trim().split(" ");
+    const homeUnitParts: string[] = ingredient.homeUnit.trim().split(" ");
     if (homeUnitParts.length > 1) {
-      const quantity = parseFloat(homeUnitParts[0].replace(",", ".")); // Cantidad numérica
-      const unit = homeUnitParts.slice(1).join(" "); // Unidad de medida
-      const proportionalValue = (grams * quantity) / this.BASE_GRAMS;
-      const formattedValue = proportionalValue.toFixed(2); // Asegura al menos dos decimales
+      const quantity: number = parseFloat(homeUnitParts[0].replace(",", ".")); // Cantidad numérica
+      const unit: string = homeUnitParts.slice(1).join(" "); // Unidad de medida
+      const proportionalValue: number = (grams * quantity) / this.BASE_GRAMS;
+      const formattedValue: string = proportionalValue.toFixed(2); // Asegura al menos dos decimales
       return `${formattedValue} ${unit}`;
     }
 
@@ -143,10 +144,10 @@ class Utils {
    * @throws {Error} Si no se encuentra el ítem.
    */
   static findItemByCodeAndFood(code: string, food: string): Ingredient {
-    const dataFood = FoodDataCache.getJsonFromCache();
-    const items = dataFood[code];
+    const dataFood: JSONIngredient = FoodDataCache.getJsonFromCache();
+    const items: Ingredient[] = dataFood[code];
     if (items) {
-      const item = items.find((item: Ingredient) => item.food === food);
+      const item: Ingredient = items.find((item: Ingredient) => item.food === food);
       if (item) {
         return item;
       }
@@ -161,14 +162,14 @@ class Utils {
    * @returns {boolean} Verdadero si la celda está dentro del rango, falso en caso contrario.
    */
   static isCellInRange(cell: string, range: string): boolean {
-    const [start, end] = range.split(":");
-    const startCol = start.replace(/[0-9]/g, "");
-    const startRow = parseInt(start.replace(/[A-Z]/g, ""), 10);
-    const endCol = end.replace(/[0-9]/g, "");
-    const endRow = parseInt(end.replace(/[A-Z]/g, ""), 10);
+    const [start, end]: string[] = range.split(":");
+    const startCol: string = start.replace(/[0-9]/g, "");
+    const startRow: number = parseInt(start.replace(/[A-Z]/g, ""), 10);
+    const endCol: string = end.replace(/[0-9]/g, "");
+    const endRow: number = parseInt(end.replace(/[A-Z]/g, ""), 10);
 
-    const cellCol = cell.replace(/[0-9]/g, "");
-    const cellRow = parseInt(cell.replace(/[A-Z]/g, ""), 10);
+    const cellCol: string = cell.replace(/[0-9]/g, "");
+    const cellRow: number = parseInt(cell.replace(/[A-Z]/g, ""), 10);
 
     return cellCol >= startCol && cellCol <= endCol && cellRow >= startRow && cellRow <= endRow;
   }
@@ -184,14 +185,14 @@ class Utils {
     endcol: LetterString;
     endrow: LetterInteger;
   } {
-    const rangeParts = range.split(":");
-    const start = rangeParts[0];
-    const end = rangeParts[1];
+    const rangeParts: string[] = range.split(":");
+    const start: string = rangeParts[0];
+    const end: string = rangeParts[1];
 
-    const startCol = start.match(/[A-Z]+/)[0] as LetterString;
-    const startRow = parseInt(start.match(/[0-9]+/)[0], 10) as LetterInteger;
-    const endCol = end.match(/[A-Z]+/)[0] as LetterString;
-    const endRow = parseInt(end.match(/[0-9]+/)[0], 10) as LetterInteger;
+    const startCol: LetterString = start.match(/[A-Z]+/)[0] as LetterString;
+    const startRow: number = parseInt(start.match(/[0-9]+/)[0], 10) as LetterInteger;
+    const endCol: LetterString = end.match(/[A-Z]+/)[0] as LetterString;
+    const endRow: number = parseInt(end.match(/[0-9]+/)[0], 10) as LetterInteger;
 
     return {
       startcol: startCol,
@@ -226,7 +227,8 @@ class Utils {
    * @param {string} sheetName - El nombre de la hoja donde se creará el rango.
    */
   static createNamedRange(range: string, name: string, sheetName: string): void {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    const sheet: GoogleAppsScript.Spreadsheet.Sheet =
+      SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
     if (sheet) {
       SpreadsheetApp.getActiveSpreadsheet().setNamedRange(name, sheet.getRange(range));
     } else {
@@ -240,10 +242,13 @@ class Utils {
    * @param {string} sheetName - El nombre de la hoja donde se eliminará el rango.
    */
   static deleteNamedRange(name: string, sheetName: string): void {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    const sheet: GoogleAppsScript.Spreadsheet.Sheet =
+      SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
     if (sheet) {
-      const namedRanges = sheet.getNamedRanges();
-      const namedRange = namedRanges.find((range) => range.getName() === name);
+      const namedRanges: GoogleAppsScript.Spreadsheet.NamedRange[] = sheet.getNamedRanges();
+      const namedRange: GoogleAppsScript.Spreadsheet.NamedRange = namedRanges.find(
+        (range: GoogleAppsScript.Spreadsheet.NamedRange) => range.getName() === name
+      );
       if (namedRange) {
         namedRange.remove();
       } else {
@@ -265,10 +270,10 @@ class Utils {
     validation: GoogleAppsScript.Spreadsheet.DataValidation,
     sheetName: string
   ): void {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    const sheet: GoogleAppsScript.Spreadsheet.Sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
     if (sheet) {
-      ranges.forEach((range) => {
-        const cell = sheet.getRange(range);
+      ranges.forEach((range: string) => {
+        const cell: GoogleAppsScript.Spreadsheet.Range = sheet.getRange(range);
         cell.clearDataValidations(); // Elimina cualquier validación existente
         cell.setDataValidation(validation);
       });
@@ -283,10 +288,10 @@ class Utils {
    * @param {string} sheetName - El nombre de la hoja donde se eliminarán las validaciones.
    */
   static deleteValidations(ranges: string[], sheetName: string): void {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    const sheet: GoogleAppsScript.Spreadsheet.Sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
     if (sheet) {
-      ranges.forEach((range) => {
-        const cell = sheet.getRange(range);
+      ranges.forEach((range: string) => {
+        const cell: GoogleAppsScript.Spreadsheet.Range = sheet.getRange(range);
         cell.clearDataValidations(); // Elimina cualquier validación existente
       });
     } else {

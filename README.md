@@ -5,9 +5,9 @@ Automatización de Google Sheets. Para un cliente del sector del fitness
 
 ## Stack
 
-| Apps Script | TypeScript |
-|----------|----------|
-|  <img src="https://i.imgur.com/woifoON.png" title="Apps Script"  alt="Apps Script" width="auto" height="55"/> | <img src="https://github.com/devicons/devicon/blob/master/icons/typescript/typescript-original.svg" title="TypeScript" alt="TypeScript" width="55" height="55"/> |
+| Apps Script | TypeScript | Eslint |
+|-|-|-|
+|  <img src="https://i.imgur.com/woifoON.png" title="Apps Script"  alt="Apps Script" width="auto" height="55"/> | <img src="https://github.com/devicons/devicon/blob/master/icons/typescript/typescript-original.svg" title="TypeScript" alt="TypeScript" width="55" height="55"/> | <img src="https://github.com/devicons/devicon/blob/master/icons/eslint/eslint-original.svg" title="Eslint" alt="Eslint" width="55" height="55"/> |
 
 ## Instalación
 1. Instalar las dependencias del proyecto:
