@@ -37,48 +37,82 @@ class FoodDataCache implements SetUp {
    */
   public static updateCacheOnSheetChange(): void {
     SpreadsheetApp.getActiveSpreadsheet().toast("Actualizando caché de datos", "Actualización", 5);
+
+    const sheetDB = FoodDataCache.getSheetDB();
+    const oldCodes = FoodDataCache.getCodesFromRange(TABLE_CODES);
+
     const jsonData = FoodDataCache.fetchApiData();
     FoodDataCache.cacheJsonData(jsonData);
     FoodDataCache.loadDataFromApi(jsonData);
+
+    const newCodes = FoodDataCache.getCodesFromRange(TABLE_CODES);
+
+    const codesAdded = newCodes.filter(code => oldCodes.indexOf(code) === -1);
+    const codesRemoved = oldCodes.filter(code => newCodes.indexOf(code) === -1);
+
+    if (codesAdded.length > 0 && codesRemoved.length > 0) {
+      FoodDataCache.deleteNonExistentNamedRanges();
+      FoodDataCache.createNamedRanges(sheetDB, sheetDB.getLastRow());
+    } else if (codesAdded.length > 0) {
+      FoodDataCache.createNamedRanges(sheetDB, sheetDB.getLastRow());
+    } else if (codesRemoved.length > 0) {
+      FoodDataCache.deleteNonExistentNamedRanges();
+    }
   }
 
   /**
-   * Sube el JSON al caché.
-   * @param {Object} jsonData - Objeto JSON a almacenar en el caché.
+   * Crea los rangos con nombre en la hoja de cálculo, excepto TABLE_CODE.
+   * @param {GoogleAppsScript.Spreadsheet.Sheet} sheetDB - La hoja de cálculo.
+   * @param {number} lastRow - La última fila con datos.
    */
-  private static cacheJsonData(jsonData: { [key: string]: Ingredient[] }): void {
-    Logger.log("Caching JSON data");
-    const cache = CacheService.getScriptCache();
-    const jsonString = JSON.stringify(jsonData);
-    cache.put(FoodDataCache.CACHE_TABLE_TCA, jsonString, 21600); // 6 horas
-  }
-
-  /**
-   * Función principal para cargar datos desde la API y escribirlos en la hoja de cálculo.
-   * @param {Object} dataTCA - Los datos obtenidos de la API.
-   */
-  private static loadDataFromApi(dataTCA: { [key: string]: Ingredient[] }): void {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FoodDataCache.SHEET_DB);
-    if (!sheet) throw new Error(`Sheet ${FoodDataCache.SHEET_DB} not found`);
-
-    // Limpiar toda la información anterior de la hoja
-    sheet.clearContents();
-
-    const codes = Object.keys(dataTCA);
-    FoodDataCache.addDataToColumn(LetterString.A, "codes", codes);
-
-    let columnIndex: LetterInteger = LetterInteger.B;
+  private static createNamedRanges(sheetDB: GoogleAppsScript.Spreadsheet.Sheet, lastRow: number): void {
+    const codes = FoodDataCache.getCodesFromRange(TABLE_CODES);
+    let columnIndex = LetterInteger.B;
     codes.forEach((code) => {
-      const data = dataTCA[code].map((item: Ingredient) => item.food);
-      FoodDataCache.addDataToColumn(Utils.getLetter(columnIndex), code, data);
+      const namedRange = `${PREFIX_CODE_FOOD}_${code}`;
+      const range = `${Utils.getLetter(columnIndex)}2:${Utils.getLetter(columnIndex)}${lastRow}`;
+      Utils.createNamedRange(range, namedRange, FoodDataCache.SHEET_DB);
       columnIndex++;
     });
+  }
 
-    SpreadsheetApp.getActiveSpreadsheet().toast(
-      "Datos de la API cargados correctamente.",
-      "Carga de datos",
-      5
-    );
+  /**
+   * Borra los rangos con nombre de códigos que ya no existen.
+   */
+  private static deleteNonExistentNamedRanges(): void {
+    const sheetDB = FoodDataCache.getSheetDB();
+    const existingCodes = FoodDataCache.getCodesFromRange(TABLE_CODES);
+    const namedRanges = sheetDB.getNamedRanges().map(range => range.getName());
+    const prefixLength = PREFIX_CODE_FOOD.length + 1;
+
+    namedRanges.forEach(namedRange => {
+      if (namedRange.startsWith(PREFIX_CODE_FOOD)) {
+        const code = namedRange.substring(prefixLength);
+        if (existingCodes.indexOf(code) === -1) {
+          Utils.deleteNamedRange(namedRange, FoodDataCache.SHEET_DB);
+        }
+      }
+    });
+  }
+
+  /**
+   * Obtiene la hoja de cálculo de la base de datos.
+   * @returns {GoogleAppsScript.Spreadsheet.Sheet} - La hoja de cálculo.
+   */
+  private static getSheetDB(): GoogleAppsScript.Spreadsheet.Sheet {
+    const sheetDB = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FoodDataCache.SHEET_DB);
+    if (!sheetDB) throw new Error(`Sheet ${FoodDataCache.SHEET_DB} not found`);
+    return sheetDB;
+  }
+
+  /**
+   * Obtiene los códigos de un rango con nombre.
+   * @param {string} rangeName - El nombre del rango.
+   * @returns {string[]} - Los códigos obtenidos del rango.
+   */
+  private static getCodesFromRange(rangeName: string): string[] {
+    const range = SpreadsheetApp.getActiveSpreadsheet().getRangeByName(rangeName);
+    return range.getValues().filter(row => row[0]).map(row => row[0]);
   }
 
   /**
@@ -105,13 +139,49 @@ class FoodDataCache implements SetUp {
   } 
 
   /**
+   * Sube el JSON al caché.
+   * @param {Object} jsonData - Objeto JSON a almacenar en el caché.
+   */
+  private static cacheJsonData(jsonData: { [key: string]: Ingredient[] }): void {
+    Logger.log("Caching JSON data");
+    const cache = CacheService.getScriptCache();
+    const jsonString = JSON.stringify(jsonData);
+    cache.put(FoodDataCache.CACHE_TABLE_TCA, jsonString, 21600); // 6 horas
+  }
+
+  /**
+   * Función principal para cargar datos desde la API y escribirlos en la hoja de cálculo.
+   * @param {Object} dataTCA - Los datos obtenidos de la API.
+   */
+  private static loadDataFromApi(dataTCA: { [key: string]: Ingredient[] }): void {
+    const sheet = FoodDataCache.getSheetDB();
+    sheet.clearContents();
+
+    const codes = Object.keys(dataTCA);
+    FoodDataCache.addDataToColumn(LetterString.A, "codes", codes);
+
+    let columnIndex: LetterInteger = LetterInteger.B;
+    codes.forEach((code) => {
+      const data = dataTCA[code].map((item: Ingredient) => item.food);
+      FoodDataCache.addDataToColumn(Utils.getLetter(columnIndex), code, data);
+      columnIndex++;
+    });
+
+    SpreadsheetApp.getActiveSpreadsheet().toast(
+      "Datos de la API cargados correctamente.",
+      "Carga de datos",
+      5
+    );
+  }
+
+  /**
    * Añade datos a una columna específica en la hoja de cálculo.
    * @param {LetterString} column - La columna a la que se añadirán los datos.
    * @param {string} header - El encabezado de la columna.
    * @param {Array<any>} data - Los datos a añadir.
    */
   private static addDataToColumn(column: LetterString, header: string, data: Array<any>): void {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FoodDataCache.SHEET_DB);
+    const sheet = FoodDataCache.getSheetDB();
     sheet.getRange(`${column}1`).setValue(header);
     sheet.getRange(`${column}2:${column}${data.length + 1}`).setValues(data.map((item) => [item]));
   }
@@ -120,23 +190,10 @@ class FoodDataCache implements SetUp {
    * Inicializa los rangos con nombre en la hoja de cálculo.
    */
   init(): void {
-    const sheetDB = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FoodDataCache.SHEET_DB);
-    if (!sheetDB) throw new Error(`Sheet ${FoodDataCache.SHEET_DB} not found`);
-    
+    const sheetDB = FoodDataCache.getSheetDB();
     const lastRow = sheetDB.getLastRow();
     Utils.createNamedRange(`A2:A${lastRow}`, TABLE_CODES, FoodDataCache.SHEET_DB);
-    
-    const range = SpreadsheetApp.getActiveSpreadsheet().getRangeByName(TABLE_CODES);
-    const codes = range.getValues().filter(row => row[0]).map(row => row[0]);
-    
-    let columnIndex = LetterInteger.B;
-    codes.forEach((code) => {
-      const namedRange = `${PREFIX_CODE_FOOD}_${code}`;
-      const range = `${Utils.getLetter(columnIndex)}2:${Utils.getLetter(columnIndex)}${lastRow}`;
-      Utils.createNamedRange(range, namedRange, FoodDataCache.SHEET_DB);
-      columnIndex++;
-    });
-
+    FoodDataCache.createNamedRanges(sheetDB, lastRow);
     SpreadsheetApp.getActiveSpreadsheet().toast("Rangos creados correctamente.", "Creación de rangos", 5);
   }
 
@@ -144,21 +201,12 @@ class FoodDataCache implements SetUp {
    * Elimina los rangos con nombre en la hoja de cálculo.
    */
   clean(): void {
-    const sheetDB = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FoodDataCache.SHEET_DB);
-    if (!sheetDB) throw new Error(`Sheet ${FoodDataCache.SHEET_DB} not found`);
-
-    const range = SpreadsheetApp.getActiveSpreadsheet().getRangeByName(TABLE_CODES);
-    const codes = range.getValues().filter(row => row[0]).map(row => row[0]);
-
+    const codes = FoodDataCache.getCodesFromRange(TABLE_CODES);
     Utils.deleteNamedRange(TABLE_CODES, FoodDataCache.SHEET_DB);
-
-    let columnIndex = LetterInteger.B;
     codes.forEach((code) => {
       const namedRange = `${PREFIX_CODE_FOOD}_${code}`;
       Utils.deleteNamedRange(namedRange, FoodDataCache.SHEET_DB);
-      columnIndex++;
     });
-
     SpreadsheetApp.getActiveSpreadsheet().toast("Rangos eliminados correctamente.", "Eliminación de rangos", 5);
   }
 }
