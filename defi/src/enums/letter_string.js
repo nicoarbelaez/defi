@@ -1,0 +1,30 @@
+// Compiled using defi 1.0.0 (TypeScript 4.9.5)
+var LetterString;
+(function (LetterString) {
+    LetterString["A"] = "A";
+    LetterString["B"] = "B";
+    LetterString["C"] = "C";
+    LetterString["D"] = "D";
+    LetterString["E"] = "E";
+    LetterString["F"] = "F";
+    LetterString["G"] = "G";
+    LetterString["H"] = "H";
+    LetterString["I"] = "I";
+    LetterString["J"] = "J";
+    LetterString["K"] = "K";
+    LetterString["L"] = "L";
+    LetterString["M"] = "M";
+    LetterString["N"] = "N";
+    LetterString["O"] = "O";
+    LetterString["P"] = "P";
+    LetterString["Q"] = "Q";
+    LetterString["R"] = "R";
+    LetterString["S"] = "S";
+    LetterString["T"] = "T";
+    LetterString["U"] = "U";
+    LetterString["V"] = "V";
+    LetterString["W"] = "W";
+    LetterString["X"] = "X";
+    LetterString["Y"] = "Y";
+    LetterString["Z"] = "Z";
+})(LetterString || (LetterString = {}));

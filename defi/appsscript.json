@@ -1,0 +1,34 @@
+{
+  "timeZone": "America/Bogota",
+  "dependencies": {},
+  "webapp": {
+    "executeAs": "USER_DEPLOYING",
+    "access": "ANYONE_ANONYMOUS"
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "sheets": {
+    "macros": [
+      {
+        "menuName": "Generador",
+        "functionName": "generate",
+        "defaultShortcut": "Ctrl+Alt+Shift+1"
+      },
+      {
+        "menuName": "Generador (temp)",
+        "functionName": "generate",
+        "defaultShortcut": "Ctrl+Alt+Shift+3"
+      },
+      {
+        "menuName": "Iniciador",
+        "functionName": "init",
+        "defaultShortcut": "Ctrl+Alt+Shift+9"
+      },
+      {
+        "menuName": "Limpiar",
+        "functionName": "clean",
+        "defaultShortcut": "Ctrl+Alt+Shift+0"
+      }
+    ]
+  }
+}
