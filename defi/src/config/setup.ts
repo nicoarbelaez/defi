@@ -21,7 +21,7 @@ function createConfigurationSheet(sheet: GoogleAppsScript.Spreadsheet.Spreadshee
 const checkAndCreateConfig = (): void => {
   const invalidFields: { name: string; range: string }[] = [];
 
-  const config = getConfigFromSheet();
+  const config = getConfig();
 
   config.forEach((section) => {
     section.content.forEach((content) => {
@@ -53,7 +53,7 @@ const checkAndCreateConfig = (): void => {
   }
 };
 
-const getConfigFromSheet = (): Config => {
+const getConfig = (): Config => {
   const configSheet = SheetUtils.getSheetByName("Configuración");
 
   const updatedConfig: Config = defaultConfig.map((section) => {

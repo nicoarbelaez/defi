@@ -60,5 +60,5 @@ function deleteTrigger(handlerFunction: string, eventType: "onOpen" | "onEdit") 
 
 function defaultTriggers() {
   createTrigger("onOpenHandler", "onOpen");
-  // createTrigger("onEditHandler", "onEdit");
+  createTrigger("onEditHandler", "onEdit");
 }
