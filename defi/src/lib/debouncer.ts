@@ -7,7 +7,7 @@ function debounce(key: string, callback: Function, delay: number) {
     Utilities.sleep(delay);
 
     const lastExecution = cache.get(key);
-    
+
     if (now === Number(lastExecution)) {
       callback(...args);
     }

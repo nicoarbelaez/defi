@@ -24,7 +24,7 @@ function createTrigger(handlerFunction: string, eventType: "onOpen" | "onEdit") 
       .onEdit() // Trigger de edición de celda
       .create();
   }
-  showToast(`✏️ Trigger '${eventType}' creado para ${handlerFunction} 📋`, "Éxito");
+  Utils.showToast(`✏️ Trigger '${eventType}' creado para ${handlerFunction} 📋`, "Éxito");
 }
 
 /**
@@ -56,9 +56,4 @@ function deleteTrigger(handlerFunction: string, eventType: "onOpen" | "onEdit") 
     "Info",
     5
   );
-}
-
-function defaultTriggers() {
-  createTrigger("onOpenHandler", "onOpen");
-  createTrigger("onEditHandler", "onEdit");
 }

@@ -26,7 +26,7 @@ function getDataBase(): ResponseDoGet {
     return fetchedDb;
   } catch (error) {
     // Mostrar alerta con detalles del error
-    showAlert(
+    Utils.showAlert(
       "Error al obtener datos",
       `No fue posible obtener la base de datos desde el servidor. 
         Detalles del error: ${error.message}

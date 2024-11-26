@@ -46,11 +46,11 @@ interface Cell {
   modifiable?: boolean;
 }
 
-interface ConfigSection {
+interface ConfigTableSection {
   name: string;
   title: Cell;
   subtitle: Cell[];
   content: Cell[];
 }
 
-type Config = ConfigSection[];
+type ConfigTable = ConfigTableSection[];

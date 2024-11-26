@@ -12,13 +12,5 @@
     "https://www.googleapis.com/auth/script.scriptapp",
     "https://www.googleapis.com/auth/spreadsheets"
   ],
-  "runtimeVersion": "V8",
-  "sheets": {
-    "macros": [
-      {
-        "menuName": "Crear activadores",
-        "functionName": "defaultTriggers"
-      }
-    ]
-  }
+  "runtimeVersion": "V8"
 }

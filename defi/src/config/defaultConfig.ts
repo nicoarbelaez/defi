@@ -1,4 +1,4 @@
-const dayConfig: ConfigSection = {
+const dayConfig: ConfigTableSection = {
   name: "day-config",
   title: {
     value: [
@@ -65,7 +65,7 @@ const dayConfig: ConfigSection = {
   ],
 };
 
-const listConfig: ConfigSection = {
+const listConfig: ConfigTableSection = {
   name: "list-config",
   title: {
     value: [
@@ -88,12 +88,12 @@ const listConfig: ConfigSection = {
   ],
 };
 
-const exchangeConfig: ConfigSection = {
+const exchangeConfig: ConfigTableSection = {
   name: "exchange-config",
   title: {
     value: [
       { text: "Configuración de Calculadora de Intercambio", format: { bold: true } },
-      { text: '(Hoja "INTERCAMBIO")', format: { size: 10 } },
+      { text: `(Hoja "INTERCAMBIOS")`, format: { size: 10 } },
     ],
     range: "B18:C18",
   },
@@ -117,4 +117,4 @@ const exchangeConfig: ConfigSection = {
   ],
 };
 
-const defaultConfig: Config = [dayConfig, listConfig, exchangeConfig];
+const defaultConfig: ConfigTable = [dayConfig, listConfig, exchangeConfig];

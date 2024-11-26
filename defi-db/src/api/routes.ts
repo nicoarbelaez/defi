@@ -7,13 +7,15 @@ function onEdit(e): void {
   const sheetName = e.source.getActiveSheet().getName();
 
   if (sheetName === "db") {
-    debounce(
+    const debouncedFunction = debounce(
       "updateData",
       () => {
         const data = getDataFromSheet();
         updatePropertiesService(data);
       },
-      1000
-    )(e);
+      2000
+    );
+
+    debouncedFunction(e);
   }
 }

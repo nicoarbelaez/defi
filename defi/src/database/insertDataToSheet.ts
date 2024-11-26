@@ -19,7 +19,7 @@ const insertDataToSheet = (): void => {
   codesRangeData.setValues(codes.map((code) => [code]));
 
   const codesRangeAddress = `${codesRangeData.getA1Notation()}`;
-  createNamedRange(codesRangeAddress, "DB_CODES", CONFIG_SHEET_NAME);
+  Utils.createNamedRange(codesRangeAddress, VariableConst.TABLE_CODES, CONFIG_SHEET_NAME);
 
   // Insertar `items`
   db.items.forEach((item, index) => {
@@ -32,6 +32,10 @@ const insertDataToSheet = (): void => {
     dataRange.setValues(foodNames);
 
     const itemRangeAddress = `${dataRange.getA1Notation()}`;
-    createNamedRange(itemRangeAddress, ("DB_FOOD_" + item.code).toUpperCase(), CONFIG_SHEET_NAME);
+    Utils.createNamedRange(
+      itemRangeAddress,
+      `${VariableConst.PREFIX_CODE_FOOD}_${item.code}`.toUpperCase(),
+      CONFIG_SHEET_NAME
+    );
   });
 };

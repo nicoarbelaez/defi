@@ -1,106 +1,74 @@
 class TableExchange {
-    private readonly _ranges: string[];
-    private readonly _sheet: GoogleAppsScript.Spreadsheet.Sheet;
-    private _data: {
-      foodCode: string;
-      foodCurrent: string;
-      grams: number;
-      equivalentFood: string;
-      equivalentGrams: number;
-      homeUnit: string;
-    };
-  
-    constructor(sheetName: string, ranges: string[]) {
-      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-      if (!sheet) throw new Error(`Sheet "${sheetName}" not found`);
-      this._sheet = sheet;
-      this._ranges = ranges;
-  
-      this._data = {
-        foodCode: "",
-        foodCurrent: "",
-        grams: 0,
-        equivalentFood: "",
-        equivalentGrams: 0,
-        homeUnit: "",
-      };
+  static calculateExchange(): { grams: number; homeUnit: string } | null {
+    const data = this.loadData();
+
+    if (!data) {
+      return null;
     }
-  
-    /**
-     * Carga los datos desde las celdas especificadas.
-     */
-    public loadData(): void {
-      const [foodCodeRange, foodCurrentRange, gramsRange, equivalentFoodRange] = this._ranges;
-  
-      this._data.foodCode = this._getValueFromRange(foodCodeRange);
-      this._data.foodCurrent = this._getValueFromRange(foodCurrentRange);
-      this._data.grams = parseInt(this._getValueFromRange(gramsRange));
-      this._data.equivalentFood = this._getValueFromRange(equivalentFoodRange);
-  
-      if (isNaN(this._data.grams)) {
-        throw new Error(`El valor de gramos no es un número válido: "${this._data.grams}"`);
-      }
-  
-      console.log("Datos cargados:", this._data);
-    }
-  
-    /**
-     * Calcula los datos necesarios para el intercambio.
-     */
-    public calculateExchange(): void {
-      const { foodCode, foodCurrent, grams, equivalentFood } = this._data;
-  
-      try {
-        const item = findItemByCodeAndFood(foodCode, foodCurrent);
-        const itemExchange = findItemByCodeAndFood(foodCode, equivalentFood);
-  
-        const itemKcal = getCalories(grams, item);
-        this._data.equivalentGrams = (itemKcal * BASE_GRAMS) / itemExchange.kcal;
-        this._data.homeUnit = getHomeUnit(this._data.equivalentGrams, itemExchange);
-  
-      } catch (error) {
-        console.error("Error en el cálculo de intercambio:", error);
-        this._data.equivalentGrams = 0;
-        this._data.homeUnit = "";
-      }
-    }
-  
-    /**
-     * Guarda los datos calculados en las celdas especificadas.
-     */
-    public storeData(): void {
-      const [_, __, ___, equivalentGramsRange, homeUnitRange] = this._ranges;
-  
-      this._setValueInRange(equivalentGramsRange, this._data.equivalentGrams.toFixed(2));
-      this._setValueInRange(homeUnitRange, this._data.homeUnit);
-  
-      console.log("Datos guardados en las celdas.");
-    }
-  
-    /**
-     * Limpia las celdas configuradas.
-     */
-    public clearData(): void {
-      this._ranges.forEach((range) => this._setValueInRange(range, ""));
-      console.log("Celdas limpiadas.");
-    }
-  
-    /**
-     * Obtiene el valor de una celda especificada.
-     * @param range - Rango de la celda.
-     * @returns El valor de la celda.
-     */
-    private _getValueFromRange(range: string): string {
-      return this._sheet.getRange(range).getValue().toString().trim();
-    }
-  
-    /**
-     * Establece un valor en una celda específica.
-     * @param range - Rango de la celda.
-     * @param value - Valor a establecer.
-     */
-    private _setValueInRange(range: string, value: string | number): void {
-      this._sheet.getRange(range).setValue(value);
+
+    try {
+      const item = Utils.findItemByCodeAndFood(data.code, data.food);
+      const itemExchange = Utils.findItemByCodeAndFood(data.code, data.foodExchange);
+
+      const itemKcal = Utils.getCalories(data.grams, item);
+      let gramsExchange = (itemKcal * Utils.BASE_GRAMS) / itemExchange.kcal;
+
+      gramsExchange = parseFloat(gramsExchange.toFixed(2));
+
+      const homeUnit = Utils.getHomeUnit(gramsExchange, itemExchange) || "-";
+
+      return { grams: gramsExchange, homeUnit };
+    } catch (error) {
+      console.error("Error al calcular el intercambio:", error);
+      return null;
     }
   }
-  
+
+  static insertDropdown() {
+    const config = getConfig().exchangeConfig;
+    const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_EXCHANGES);
+
+    if (isCellEmpty(sheet, config.foodCode)) {
+      DropDownUtil.removeDropDown(sheet, config.foodToBeExchanged);
+      DropDownUtil.removeDropDown(sheet, config.equivalentFood);
+      return;
+    }
+
+    const code = getCellValues(sheet, config.foodCode)[0].toUpperCase();
+    const rangeName = VariableConst.PREFIX_CODE_FOOD.concat(`_${code}`);
+
+    DropDownUtil.createDropDown(sheet, rangeName, config.foodToBeExchanged);
+    DropDownUtil.createDropDown(sheet, rangeName, config.equivalentFood);
+  }
+
+  static insertData({ grams, homeUnit }: { grams: number; homeUnit: string }) {
+    const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_EXCHANGES);
+    const config = getConfig().exchangeConfig;
+
+    setCellValue(sheet, config.equivalentPortion, [{ text: grams.toString().replace(".", ",") }]);
+    setCellValue(sheet, config.homeMeasurement, [{ text: homeUnit }]);
+  }
+
+  private static loadData(): {
+    code: string;
+    food: string;
+    grams: number;
+    foodExchange: string;
+  } | null {
+    const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_EXCHANGES);
+    const config = getConfig().exchangeConfig;
+
+    const code = sheet.getRange(config.foodCode).getValue();
+    const food = sheet.getRange(config.foodToBeExchanged).getValue();
+    const grams = parseInt(sheet.getRange(config.targetQuantity).getValue(), 10);
+    const foodExchange = sheet.getRange(config.equivalentFood).getValue();
+
+    if (!code || !food || isNaN(grams) || grams <= 0 || !foodExchange) {
+      return null;
+    }
+
+    setCellValue(sheet, config.equivalentPortion, [{ text: "🛜Cargando..." }]);
+    setCellValue(sheet, config.homeMeasurement, [{ text: "🛜Cargando..." }]);
+    return { code, food, grams, foodExchange };
+  }
+}
