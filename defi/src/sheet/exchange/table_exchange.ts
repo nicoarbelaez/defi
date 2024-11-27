@@ -10,6 +10,10 @@ class TableExchange {
       const item = Utils.findItemByCodeAndFood(data.code, data.food);
       const itemExchange = Utils.findItemByCodeAndFood(data.code, data.foodExchange);
 
+      if (!item || !itemExchange) {
+        return null;
+      }
+
       const itemKcal = Utils.getCalories(data.grams, item);
       let gramsExchange = (itemKcal * Utils.BASE_GRAMS) / itemExchange.kcal;
 

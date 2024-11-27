@@ -1,15 +1,15 @@
 function onOpenHandler() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet();
-  const configSheet = sheet.getSheetByName("Configuración");
-  const existeConfig: boolean = DocumentPropertiesService.getProperty("config");
+  const configSheet = sheet.getSheetByName(VariableConst.SHEET_CONFIG);
+  const existeConfig: boolean = DocumentPropertiesService.getProperty(VariableConst.CONFIG_KEY);
 
   if (!configSheet) {
     createConfigurationSheet(sheet);
     checkAndCreateConfig();
-    insertDataToSheet();
   } else {
     existeConfig ?? checkAndCreateConfig();
   }
+  insertDataToSheet();
 
   addDropDowns(sheet);
 
