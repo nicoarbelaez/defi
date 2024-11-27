@@ -1,6 +1,8 @@
 function createConfigurationSheet(sheet: GoogleAppsScript.Spreadsheet.Spreadsheet): void {
   try {
-    const configSheet = sheet.insertSheet("Configuración");
+    Utils.showToast("⚙️ Iniciando creación de hoja de configuración", "Por favor espera...");
+
+    const configSheet = sheet.insertSheet(VariableConst.SHEET_CONFIG);
     if (!configSheet) throw new Error("No se pudo crear la hoja de configuración.");
 
     const processCell = (cell: Cell): void => {
@@ -16,32 +18,34 @@ function createConfigurationSheet(sheet: GoogleAppsScript.Spreadsheet.Spreadshee
       section.content.forEach(processCell); // Procesar contenido
     });
 
-    Utils.showToast("✅ Configuración completada.");
+    Utils.showToast("✅ Hoja de configuración creada correctamente.", "Operación exitosa.");
   } catch (error) {
-    Utils.showAlert("Error al crear configuración", error.message, "error");
-    throw error; // Propagar el error para manejarlo más arriba si es necesario
+    Utils.showAlert("❌ Error al crear configuración", error.message, "error");
+    throw error;
   }
 }
 
-const checkAndCreateConfig = (): void => {
+function checkAndCreateConfig(): boolean {
   try {
+    Utils.showToast("🔍 Verificando configuración", "Validando integridad de los datos...");
+
     const config = getConfig();
 
-    // Validar la configuración obtenida
     validateConfig(config);
 
-    // Si la configuración es válida, la guardamos
-    DocumentPropertiesService.setProperty("config", JSON.stringify(config));
     Utils.showToast(
-      "✅ La configuración es correcta",
-      "La configuración se ha guardado correctamente en el documento."
+      "✅ Configuración verificada",
+      "La configuración es válida y está actualizada."
     );
+
+    return true;
   } catch (error) {
-    // Si hay un error (por ejemplo, validación fallida), mostramos el detalle
-    Utils.showAlert("Configuración inválida", error.message, "error");
-    DocumentPropertiesService.deleteProperty("config");
+    Utils.showAlert("❌ Configuración inválida", error.message, "error");
+    DocumentPropertiesService.deleteProperty(VariableConst.CONFIG_KEY);
+
+    return false;
   }
-};
+}
 
 /**
  * Valida la configuración completa según la interfaz Config.
@@ -62,7 +66,7 @@ const validateConfig = (config: Config): void => {
       rangeKeys.forEach((key) => {
         if (ranges[key] && !Utils.isValidRange(ranges[key])) {
           invalidFields.push(
-            `${dayPlan.day}.ranges.${key} ${ranges[key]}: debe tener un formato de celda válido`
+            `${dayPlan.day}.ranges.${key} [${ranges[key]}]: debe tener un formato de celda válido`
           );
         }
       });
@@ -108,9 +112,17 @@ const validateConfig = (config: Config): void => {
   }
 };
 
-// Modificar
 function getConfig(): Config {
-  const config: Config = {
+  const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_CONFIG);
+  const lastUpdateFromSheet = sheet.getRange("A2").getValue();
+
+  let config: Config = DocumentPropertiesService.getProperty(VariableConst.CONFIG_KEY);
+
+  if (config?.lastUpdate === lastUpdateFromSheet) {
+    return config;
+  }
+
+  config = {
     dayConfig: [],
     listConfig: [],
     exchangeConfig: {
@@ -121,20 +133,27 @@ function getConfig(): Config {
       equivalentPortion: "",
       homeMeasurement: "",
     },
+    lastUpdate: lastUpdateFromSheet,
   };
 
-  defaultConfig.forEach((section) => {
-    const nameConfig = section.name;
-    const content = section.content;
+  const sheetConfig: ConfigTable = defaultConfig.map(generateUpdatedConfigSection);
 
-    if (nameConfig === "day-config") {
-      config.dayConfig = processDayConfig(content);
-    } else if (nameConfig === "list-config") {
-      config.listConfig = processListConfig(content);
-    } else if (nameConfig === "exchange-config") {
-      config.exchangeConfig = processExchangeConfig(content);
+  sheetConfig.forEach((section) => {
+    switch (section.name) {
+      case "day-config":
+        config.dayConfig = processDayConfig(section.content);
+        break;
+      case "list-config":
+        config.listConfig = processListConfig(section.content);
+        break;
+      case "exchange-config":
+        config.exchangeConfig = processExchangeConfig(section.content);
+        break;
     }
   });
+
+  DocumentPropertiesService.setProperty(VariableConst.CONFIG_KEY, JSON.stringify(config));
+
   return config;
 }
 
@@ -231,3 +250,30 @@ const processExchangeConfig = (content: Cell[]): ExchangeConfig => {
 
   return exchangeConfig;
 };
+
+/**
+ * Genera un nuevo objeto ConfigTableSection con valores actualizados desde la hoja de cálculo.
+ * @param {ConfigTableSection} configSection - El objeto de configuración original.
+ * @param {GoogleSheet} sheet - Hoja de cálculo para obtener los valores.
+ * @returns {ConfigTableSection} - El nuevo objeto con valores actualizados.
+ */
+function generateUpdatedConfigSection(configSection: ConfigTableSection): ConfigTableSection {
+  const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_CONFIG);
+  // Crear una copia profunda del objeto original para no modificarlo directamente
+  const newConfigSection: ConfigTableSection = JSON.parse(JSON.stringify(configSection));
+
+  // Iterar sobre el contenido del objeto
+  newConfigSection.content = configSection.content.map((item) => {
+    if (item.modifiable) {
+      // Obtener el nuevo valor desde la hoja de cálculo usando el rango
+      const newValue = sheet.getRange(item.range).getValue();
+      return {
+        ...item,
+        value: [{ text: newValue }],
+      };
+    }
+    return item; // Retornar el item sin modificar si no es modificable
+  });
+
+  return newConfigSection;
+}

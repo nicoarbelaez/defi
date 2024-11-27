@@ -1,30 +1,38 @@
-/**
- * Crea un trigger instalado para la función proporcionada.
- * @param {string} handlerFunction - El nombre de la función a manejar con el trigger.
- * @param {string} eventType - El tipo de evento (ej. 'onEdit', 'onOpen', etc.).
- */
 function createTrigger(handlerFunction: string, eventType: "onOpen" | "onEdit") {
-  // Verifica si el trigger ya está creado, y si no, lo crea
-  const triggers = ScriptApp.getProjectTriggers();
-  for (const trigger of triggers) {
-    if (trigger.getHandlerFunction() === handlerFunction) {
-      return; // Ya existe un trigger, no lo creamos de nuevo
-    }
-  }
+  try {
+    Utils.showToast(
+      "⚡ Configurando trigger",
+      `Asociando evento '${eventType}' con la función '${handlerFunction}'`
+    );
 
-  // Crea el trigger instalado para el evento proporcionado
-  if (eventType === "onOpen") {
-    ScriptApp.newTrigger(handlerFunction)
-      .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
-      .onOpen() // Trigger de apertura de la hoja
-      .create();
-  } else if (eventType === "onEdit") {
-    ScriptApp.newTrigger(handlerFunction)
-      .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
-      .onEdit() // Trigger de edición de celda
-      .create();
+    const triggers = ScriptApp.getProjectTriggers();
+    for (const trigger of triggers) {
+      if (trigger.getHandlerFunction() === handlerFunction) {
+        Utils.showToast(
+          "🔁 Trigger existente",
+          `El trigger para '${handlerFunction}' ya estaba configurado.`
+        );
+        return; // Ya existe un trigger, no lo creamos de nuevo
+      }
+    }
+
+    if (eventType === "onOpen") {
+      ScriptApp.newTrigger(handlerFunction)
+        .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
+        .onOpen()
+        .create();
+    } else if (eventType === "onEdit") {
+      ScriptApp.newTrigger(handlerFunction)
+        .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
+        .onEdit()
+        .create();
+    }
+
+    Utils.showToast(`✅ Trigger '${eventType}' creado con éxito`, `Función: ${handlerFunction}`);
+  } catch (error) {
+    Utils.showAlert("❌ Error al crear trigger", error.message, "error");
+    throw error;
   }
-  Utils.showToast(`✏️ Trigger '${eventType}' creado para ${handlerFunction} 📋`, "Éxito");
 }
 
 /**
