@@ -20,6 +20,7 @@ interface ExchangeConfig {
 }
 
 interface Config {
+  lastUpdate: string;
   dayConfig: MealPlan[];
   listConfig: string[];
   exchangeConfig: ExchangeConfig;

@@ -11,22 +11,18 @@ class Utils {
   }
 
   static getCarbs(grams: number, ingredient: Micronutrients): number {
-    this.validateHomeUnit(ingredient.homeUnit); // Validación de homeUnit
     return (grams * ingredient.carb) / this.BASE_GRAMS;
   }
 
   static getProteins(grams: number, ingredient: Micronutrients): number {
-    this.validateHomeUnit(ingredient.homeUnit); // Validación de homeUnit
     return (grams * ingredient.protein) / this.BASE_GRAMS;
   }
 
   static getFats(grams: number, ingredient: Micronutrients): number {
-    this.validateHomeUnit(ingredient.homeUnit); // Validación de homeUnit
     return (grams * ingredient.fat) / this.BASE_GRAMS;
   }
 
   static getCalories(grams: number, ingredient: Micronutrients): number {
-    this.validateHomeUnit(ingredient.homeUnit); // Validación de homeUnit
     return (grams * ingredient.kcal) / this.BASE_GRAMS;
   }
 
@@ -42,16 +38,31 @@ class Utils {
     return `${proportionalValue.toFixed(2).replace(".", ",")} ${unit}`;
   }
 
-  static findItemByCodeAndFood(code: string, food: string): Micronutrients {
+  static findItemByCodeAndFood(code: string, food: string): Micronutrients | null {
     const dataFood = getDataBase();
-    const foods = dataFood.items.find((item) => item.code === code).food;
+    const foods = dataFood.items.find((item) => item.code === code)?.food;
+
     if (foods) {
       const item = foods.find((item: Micronutrients) => item.nameFood === food);
       if (item) {
         return item;
       }
     }
-    throw new Error(`Item with code ${code} and food ${food} not found.`);
+
+    console.warn(`Micronutriente no encontrado para el código: ${code} y alimento: ${food}`);
+    return null;
+  }
+
+  static parseGramsValue(rawValue: string): { num: number; str: string } {
+    // Extraer número
+    const numMatch = rawValue.match(/^\d+/);
+    const num = numMatch ? parseInt(numMatch[0]) : 0;
+
+    // Extraer texto después del número
+    const strMatch = rawValue.match(/[^\d\s]+.*$/);
+    const str = strMatch ? strMatch[0].trim() : "";
+
+    return { num, str };
   }
 
   /**
