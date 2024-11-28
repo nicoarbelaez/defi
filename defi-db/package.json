@@ -1,0 +1,21 @@
+{
+  "name": "defi-db",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "push": "clasp push",
+    "pull": "clasp pull"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@google/clasp": "^2.4.2",
+    "@types/google-apps-script": "^1.0.85",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "defi-db": "file:"
+  }
+}
