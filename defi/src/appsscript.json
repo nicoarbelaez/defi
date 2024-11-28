@@ -12,5 +12,12 @@
     "https://www.googleapis.com/auth/script.scriptapp",
     "https://www.googleapis.com/auth/spreadsheets"
   ],
-  "runtimeVersion": "V8"
+  "runtimeVersion": "V8",
+  "sheets": {
+    "macros": [{
+      "menuName": "Iniciar triggers",
+      "functionName": "initializeProject",
+      "defaultShortcut": "Ctrl+Alt+Shift+1"
+    }]
+  }
 }
