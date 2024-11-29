@@ -1,4 +1,6 @@
+const DATE_NOW = Date.now();
 function onEditHandler(e: GoogleAppsScript.Events.SheetsOnEdit) {
+  DocumentPropertiesService.setProperty(VariableConst.TIME_ONEDIT_KEY, DATE_NOW);
   const cellRange = e.range;
   const cellA1 = cellRange.getA1Notation();
   const sheet = cellRange.getSheet();
@@ -43,38 +45,51 @@ function handleDietEdit(cellA1: string): void {
   const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_DIET);
 
   // Obtener el día relacionado con el rango editado
+  Utils.showToast("🔍 Analizando", `Buscando coincidencias con el rango editado (${cellA1})`);
   const matchingDay = config.dayConfig.find((day) =>
     Utils.isCellInRange(cellA1, day.ranges.content)
   );
   if (!matchingDay) return;
 
-  Utils.showToast("🔍 Analizando", `Buscando coincidencias con el rango editado (${cellA1})`);
-
-  // Procesar datos de las tablas para todos los días
+  Utils.showToast("📋 Procesando tablas", `Recopilando ítems del día ${matchingDay.day}`);
   const allItems = TableFood.getItemsByDay(config, sheet);
 
-  Utils.showToast("📋 Procesando tablas", `Recopilando ítems del día ${matchingDay.day}`);
-
-  // Determinar el día editado y procesar sus tablas
   const editedDayItems = allItems[matchingDay.day];
 
-  // Filtrar ítems incompletos (sin `code`, `food` o `grams`)
   const completeItems = TableFood.filterCompleteItems(allItems);
 
   Utils.showToast("📦 Generando listas desplegables", `Día ${matchingDay.day}`);
-  const itemsMissingCodeDropdown = editedDayItems.filter((item) => !item.code.isDropDown);
-  const itemsWithCodeButMissingFoodDropdown = editedDayItems.filter((item) => item.code.value);
+  const itemsMissingCodeDropdown: Item[][] = editedDayItems.map((mealItems) => {
+    return mealItems.filter((item) => !item.code.isDropDown);
+  });
 
-  itemsWithCodeButMissingFoodDropdown.forEach((item) => {
-    const rangeName = `${VariableConst.PREFIX_CODE_FOOD}_${item.code.value}`;
-    DropDownUtil.createDropDown(sheet, rangeName, item.food.range);
+  const itemsWithCodeButMissingFoodDropdown: Item[][] = editedDayItems.map((mealItems) => {
+    return mealItems.filter((item) => item.code.value);
+  });
+
+  itemsWithCodeButMissingFoodDropdown.forEach((mealItems) => {
+    mealItems.forEach((item) => {
+      const rangeName = `${VariableConst.PREFIX_CODE_FOOD}_${item.code.value}`;
+      DropDownUtil.createDropDown(sheet, rangeName, item.food.range);
+    });
   });
 
   Utils.showToast("📦 Agregando listas desplegables de códigos", `Día ${matchingDay.day}`);
-  itemsMissingCodeDropdown.forEach((item) => {
-    const rangeName = `${VariableConst.TABLE_CODES}_${item.code.value}`;
-    DropDownUtil.createDropDown(sheet, rangeName, item.code.range);
+  itemsMissingCodeDropdown.forEach((mealItems) => {
+    mealItems.forEach((item) => {
+      const rangeName = `${VariableConst.TABLE_CODES}_${item.code.value}`;
+      DropDownUtil.createDropDown(sheet, rangeName, item.code.range);
+    });
   });
+
+  // Deboncue
+  const executionTime = DocumentPropertiesService.getProperty(VariableConst.TIME_ONEDIT_KEY);
+  if (executionTime != DATE_NOW) {
+    // Utils.showToast(`🕒️ Tiempo de espera ${executionTime} = ${DATE_NOW}`);
+    return;
+  }
+  // Utils.showAlert("✅ Ejecutando...", `${executionTime} = ${DATE_NOW}`);
+  // Deboncue
 
   Utils.showToast("📊 Calculando micronutrientes", `Día ${matchingDay.day}`);
   const totalMicronutrients = TableFood.calculateTotalMicronutrients(
@@ -82,11 +97,13 @@ function handleDietEdit(cellA1: string): void {
   );
 
   Utils.showToast("✏️ Agregando valores procesados en el día", `Día ${matchingDay.day}`);
-  completeItems[matchingDay.day].forEach((item) => {
-    if (item.grams.value) {
-      const grams = item.grams.value.str;
-      sheet.getRange(item.grams.range).setValue(grams);
-    }
+  completeItems[matchingDay.day].forEach((mealItems) => {
+    mealItems.forEach((item) => {
+      if (item.grams.value.num) {
+        const grams = item.grams.value.str;
+        sheet.getRange(item.grams.range).setValue(grams);
+      }
+    });
   });
 
   const micronutrientCell = sheet.getRange(matchingDay.ranges.sumMicronutrients);
@@ -98,10 +115,28 @@ function handleDietEdit(cellA1: string): void {
   sheet.getRange(micronutrientRow + 2, micronutrientCol).setValue(totalMicronutrients.protein);
   sheet.getRange(micronutrientRow + 3, micronutrientCol).setValue(totalMicronutrients.fat);
 
-  // Crear un array único combinando ítems duplicados en todos los días
+  let totalByMealIndex = 0;
+  const mealDay = config.dayConfig.find((day) => day.day === matchingDay.day);
+  ["table1", "table2"].forEach((tableKey, i) => {
+    const tableRange = mealDay.ranges[tableKey as keyof MealDayData];
+    if (!tableRange) {
+      console.warn(`No se encontró el rango para ${tableKey}`);
+      return;
+    }
+
+    const rangeCells = sheet.getRange(tableRange);
+    const startCol = rangeCells.getColumn() + 2;
+    const lastCol = rangeCells.getLastColumn();
+    const lastRow = rangeCells.getLastRow();
+    for (let col = startCol; col <= lastCol; col += 3) {
+      sheet.getRange(lastRow, col).setValue(totalMicronutrients.totalByMeal[totalByMealIndex]);
+      totalByMealIndex++;
+    }
+  });
+
   const uniqueCombinedItems = TableFood.combineDuplicateItems(completeItems);
 
-  Utils.showToast("✏️ Actualizando listas", `Insertando ítems en las listas combinadas`);
+  Utils.showToast("✏️ Actualizando listas", `Insertando ítems en las listas de compras`);
   let itemIndex = 0;
   config.listConfig.forEach((range) => {
     const rangeCells = sheet.getRange(range);

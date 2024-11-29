@@ -9,3 +9,7 @@ interface CellData {
   range: string;
   isDropDown: boolean;
 }
+
+type TotalMicronutrients = Omit<Micronutrients, "nameFood" | "homeUnit"> & {
+  totalByMeal: number[];
+};

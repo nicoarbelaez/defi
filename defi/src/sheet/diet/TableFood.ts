@@ -32,61 +32,149 @@ class TableFood {
     return processedCells;
   }
 
-  static calculateTotalMicronutrients(
-    editedDayItems: Item[]
-  ): Omit<Micronutrients, "nameFood" | "homeUnit"> {
-    const totalMicronutrients: Omit<Micronutrients, "nameFood" | "homeUnit"> = {
+  static calculateTotalMicronutrients(editedDayItems: Item[][]): TotalMicronutrients {
+    const totalMicronutrients: TotalMicronutrients = {
+      totalByMeal: [],
       kcal: 0,
       carb: 0,
       protein: 0,
       fat: 0,
     };
 
-    editedDayItems.forEach((item) => {
-      try {
-        const micronutrient = Utils.findItemByCodeAndFood(item.code.value, item.food.value);
-
-        if (!micronutrient) {
-          return;
-        }
-
-        const grams = item.grams.value.num || 0;
-
-        totalMicronutrients.kcal += Utils.getCalories(grams, micronutrient);
-        totalMicronutrients.carb += Utils.getCarbs(grams, micronutrient);
-        totalMicronutrients.protein += Utils.getProteins(grams, micronutrient);
-        totalMicronutrients.fat += Utils.getFats(grams, micronutrient);
-
-        // Actualizar grams.str con el home unit
-        const homeUnit = Utils.getHomeUnit(grams, micronutrient);
-        item.grams.value.str = homeUnit ? `${grams}g (${homeUnit})` : `${grams}g`;
-      } catch (error) {
-        console.error(
-          `Error al procesar el alimento ${item.food.value} con código ${item.code.value}:`,
-          error
-        );
+    editedDayItems.forEach((meal) => {
+      let mealCalories = 0;
+      if (meal.length === 0) {
+        totalMicronutrients.totalByMeal.push(mealCalories);
+        return;
       }
+      meal.forEach((item) => {
+        try {
+          const micronutrient = Utils.findItemByCodeAndFood(item.code.value, item.food.value);
+
+          if (!micronutrient) {
+            return;
+          }
+
+          const grams = item.grams.value.num || 0;
+
+          totalMicronutrients.kcal += Utils.getCalories(grams, micronutrient);
+          totalMicronutrients.carb += Utils.getCarbs(grams, micronutrient);
+          totalMicronutrients.protein += Utils.getProteins(grams, micronutrient);
+          totalMicronutrients.fat += Utils.getFats(grams, micronutrient);
+
+          mealCalories += Utils.getCalories(grams, micronutrient);
+
+          const homeUnit = Utils.getHomeUnit(grams, micronutrient);
+          item.grams.value.str = homeUnit ? `${grams}g (${homeUnit})` : `${grams}g`;
+        } catch (error) {
+          console.error(
+            `Error al procesar el alimento ${item.food.value} con código ${item.code.value}:`,
+            error
+          );
+        }
+      });
+      totalMicronutrients.totalByMeal.push(mealCalories);
     });
 
     return totalMicronutrients;
   }
 
-  static extractTableData(sheet: GoogleAppsScript.Spreadsheet.Sheet, range: string): Item[] {
+  static combineDuplicateItems(completeItems: Record<string, Item[][]>): Item[] {
+    const uniqueItemsMap = new Map<string, Item>();
+
+    // Iterar sobre los días y las comidas
+    for (const day in completeItems) {
+      completeItems[day].forEach((mealItems) => {
+        mealItems.forEach((item) => {
+          const uniqueKey = `${item.code.value}|${item.food.value}`;
+
+          // Si el ítem no existe, agregarlo
+          if (!uniqueItemsMap.has(uniqueKey)) {
+            uniqueItemsMap.set(uniqueKey, this.deepClone(item));
+          } else {
+            // Si existe, acumular los gramos
+            const existingItem = uniqueItemsMap.get(uniqueKey)!;
+            existingItem.grams.value.num += item.grams.value.num;
+          }
+        });
+      });
+    }
+
+    return Array.from(uniqueItemsMap.values());
+  }
+
+  static deepClone(item: Item): Item {
+    return {
+      code: { ...item.code },
+      food: { ...item.food },
+      grams: {
+        ...item.grams,
+        value: { ...item.grams.value },
+      },
+    };
+  }
+
+  static filterCompleteItems(itemsByDay: Record<string, Item[][]>): Record<string, Item[][]> {
+    const filtered: Record<string, Item[][]> = {};
+
+    for (const day in itemsByDay) {
+      filtered[day] = itemsByDay[day].map((mealItems) => {
+        return mealItems.filter(
+          (item) => item.code.value && item.food.value && item.grams.value.num
+        );
+      });
+    }
+
+    return filtered;
+  }
+
+  static getItemsByDay(
+    config: Config,
+    sheet: GoogleAppsScript.Spreadsheet.Sheet
+  ): Record<string, Item[][]> {
+    const itemsByDay: Record<string, Item[][]> = {};
+
+    config.dayConfig.forEach((day) => {
+      const dayItems: Item[][] = [];
+      ["table1", "table2"].forEach((tableKey) => {
+        const tableRange = day.ranges[tableKey as keyof MealDayData];
+        const tableData = TableFood.extractTableData(sheet, tableRange);
+
+        // Agregar los items de cada comida
+        dayItems.push(...tableData);
+      });
+
+      itemsByDay[day.day] = dayItems;
+    });
+
+    return itemsByDay;
+  }
+
+  private static extractTableData(
+    sheet: GoogleAppsScript.Spreadsheet.Sheet,
+    range: string
+  ): Item[][] {
+    // Retornamos un arreglo de arreglos (comidas)
     const adjustedRange = Utils.adjustRangeForTable(range);
     const rangeData = sheet.getRange(adjustedRange).getValues();
     const firstColumn = sheet.getRange(adjustedRange).getColumn();
     const startRow = sheet.getRange(adjustedRange).getRow();
 
-    const items: Item[] = [];
+    // Inicializamos tres arreglos vacíos para cada comida
+    const meal1: Item[] = [];
+    const meal2: Item[] = [];
+    const meal3: Item[] = [];
+
+    // Iteramos por cada fila de la tabla
     rangeData.forEach((rowData, rowIndex) => {
       for (let colOffset = 0; colOffset < 3; colOffset++) {
-        const baseCol = firstColumn + colOffset * 3;
-        const rowNum = startRow + rowIndex;
+        const baseCol = firstColumn + colOffset * 3; // Calculamos la columna base
+        const rowNum = startRow + rowIndex; // Calculamos la fila
 
         const rawGrams = rowData[colOffset * 3 + 2]?.toString() || "";
         const { num, str } = Utils.parseGramsValue(rawGrams);
 
-        items.push({
+        const item: Item = {
           code: {
             value: rowData[colOffset * 3] || "",
             range: Utils.getCellA1Notation(sheet, baseCol, rowNum),
@@ -108,90 +196,20 @@ class TableFood {
             range: Utils.getCellA1Notation(sheet, baseCol + 2, rowNum),
             isDropDown: false, // Asumimos que `grams` no tiene validación
           },
-        });
+        };
+
+        // Asignamos el ítem al arreglo correspondiente según la columna
+        if (colOffset === 0) {
+          meal1.push(item); // Columna A, B, C (comida 1)
+        } else if (colOffset === 1) {
+          meal2.push(item); // Columna D, E, F (comida 2)
+        } else {
+          meal3.push(item); // Columna G, H, I (comida 3)
+        }
       }
     });
 
-    return items;
-  }
-
-  static filterCompleteItems(itemsByDay: Record<string, Item[]>): Record<string, Item[]> {
-    const filtered: Record<string, Item[]> = {};
-
-    for (const day in itemsByDay) {
-      filtered[day] = itemsByDay[day].filter(
-        (item) => item.code.value && item.food.value && item.grams.value
-      );
-    }
-
-    return filtered;
-  }
-
-  static combineDuplicateItems(completeItems: Record<string, Item[]>): Item[] {
-    const uniqueItemsMap = new Map<string, Item>();
-
-    for (const day in completeItems) {
-      completeItems[day].forEach((item) => {
-        const uniqueKey = `${item.code.value}|${item.food.value}`; // Crear clave única basada en `code` y `food`
-
-        // Aseguramos de hacer una copia profunda del item
-        const itemCopy = this.deepClone(item);
-
-        if (!uniqueItemsMap.has(uniqueKey)) {
-          // Si no existe, agregar la copia
-          uniqueItemsMap.set(uniqueKey, itemCopy);
-          return;
-        }
-
-        const existingItem = uniqueItemsMap.get(uniqueKey)!;
-
-        // Hacemos una copia del ítem existente antes de modificarlo
-        const updatedItem = this.deepClone(existingItem);
-
-        // Realizar la suma de los valores en la copia
-        updatedItem.grams.value.num = existingItem.grams.value.num + itemCopy.grams.value.num;
-
-        // Actualizar el mapa con el ítem modificado
-        uniqueItemsMap.set(uniqueKey, updatedItem);
-      });
-    }
-
-    // Convertir el mapa a un array y retornarlo
-    return Array.from(uniqueItemsMap.values());
-  }
-
-  static deepClone(item: Item): Item {
-    // Clonamos el objeto `item` de manera profunda
-    return {
-      code: { ...item.code }, // Copia superficial de `code`
-      food: { ...item.food }, // Copia superficial de `food`
-      grams: {
-        ...item.grams, // Copia superficial de `grams`
-        value: {
-          num: item.grams.value.num, // Copia del número de gramos
-          str: item.grams.value.str, // Copia del texto de los gramos
-        },
-      },
-    };
-  }
-
-  static getItemsByDay(
-    config: Config,
-    sheet: GoogleAppsScript.Spreadsheet.Sheet
-  ): Record<string, Item[]> {
-    const itemsByDay: Record<string, Item[]> = {};
-
-    config.dayConfig.forEach((day) => {
-      const dayItems: Item[] = [];
-      ["table1", "table2"].forEach((tableKey) => {
-        const tableRange = day.ranges[tableKey as keyof MealDayData];
-        const tableData = TableFood.extractTableData(sheet, tableRange);
-        dayItems.push(...tableData);
-      });
-
-      itemsByDay[day.day] = dayItems;
-    });
-
-    return itemsByDay;
+    // Retornamos los tres arreglos como un arreglo de comidas
+    return [meal1, meal2, meal3];
   }
 }
