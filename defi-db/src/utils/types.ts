@@ -1,14 +1,17 @@
-interface ResponseDoGet {
-  lastUpdate: string;
-  items: {
-    code: string;
-    food: Micronutrients[];
-  }[];
+interface DoGetResponse {
+  lastUpdate: string; // Timestamp de cualquier actulizacion de google sheet
+  items: Item[];
   codes: string[];
   baseGrams: number;
+  exerciseDatabase: ExerciseDatabase;
 }
 
-interface Micronutrients {
+interface Item {
+  code: string;
+  food: Micronutrient[];
+}
+
+interface Micronutrient {
   nameFood: string;
   kcal: number;
   carb: number;
@@ -18,4 +21,15 @@ interface Micronutrients {
     value: number;
     unit: string;
   };
+}
+
+interface ExerciseDatabase {
+  muscleGroups: string[];
+  exercises: {
+    muscleGroup: string;
+    exercise: {
+      name: string;
+      url: string;
+    }[];
+  }[];
 }
