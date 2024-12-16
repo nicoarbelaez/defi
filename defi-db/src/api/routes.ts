@@ -3,15 +3,21 @@ function doGet(e: GoogleAppsScript.Events.DoGet): GoogleAppsScript.Content.TextO
   return ContentService.createTextOutput(jsonResponse).setMimeType(ContentService.MimeType.JSON);
 }
 
-function onEdit(e): void {
+function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
   const sheetName = e.source.getActiveSheet().getName();
+  const sheetsToWatch = ["db", "Ejercicios"];
 
-  if (sheetName === "db") {
+  if (sheetsToWatch.includes(sheetName)) {
     const debouncedFunction = debounce(
       "updateData",
       () => {
-        const data = getDataFromSheet();
-        updatePropertiesService(data);
+        const newResponse = generateResponse();
+        PropertiesService.getDocumentProperties().setProperty("cachedData", newResponse);
+
+        SpreadsheetApp.getActive().toast(
+          `Datos guardados correctamente`,
+          "✅ ¡Guardado con éxito!"
+        );
       },
       2000
     );
