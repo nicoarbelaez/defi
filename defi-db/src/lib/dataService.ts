@@ -1,83 +1,75 @@
-function getDataFromSheet(): string {
-  try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("db");
-    if (!sheet) {
-      throw new Error("La hoja 'db' no existe. Verifique el archivo.");
-    }
+function getItemsAndCodes(): { items: Item[]; codes: string[] } {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("db");
+  if (!sheet) throw new Error("La hoja 'db' no existe.");
 
-    const data = sheet.getDataRange().getValues();
-    if (!data || data.length <= 1) {
-      throw new Error("La hoja 'db' no contiene datos o está vacía.");
-    }
+  const data = sheet.getDataRange().getValues();
+  if (!data || data.length <= 1) throw new Error("La hoja 'db' está vacía.");
 
-    const response: ResponseDoGet = {
-      lastUpdate: Date.now().toString(),
-      baseGrams: 100,
-      codes: [],
-      items: [],
+  const items: Item[] = [];
+  const codes: string[] = [];
+
+  data.slice(1).forEach((row) => {
+    const code = row[0]?.toString().trim();
+    if (!code || ["Código", "", "1"].includes(code)) return;
+
+    const homeUnitParts = row[6]?.toString().split(" ") || [];
+    const micronutrient: Micronutrient = {
+      nameFood: row[1],
+      kcal: Number(row[2]),
+      carb: Number(row[3]),
+      protein: Number(row[4]),
+      fat: Number(row[5]),
+      homeUnit: {
+        value: parseFloat(homeUnitParts[0]?.replace(",", ".") || "0"),
+        unit: homeUnitParts.slice(1).join(" ") || "",
+      },
     };
 
-    data.slice(1).forEach((row, index) => {
-      try {
-        const code: string = row[0]?.toString().trim();
-        if (!code || ["Código", "", "1"].includes(code)) {
-          return;
-        }
+    if (!codes.includes(code)) codes.push(code);
 
-        const homeUnitParts: string[] = row[6]?.toString().split(" ");
-        const homeUnitValue = parseFloat(homeUnitParts[0]?.replace(",", ".") || "0");
-        const homeUnitString = homeUnitParts.slice(1).join(" ") || "";
+    let item = items.find((item) => item.code === code);
+    if (item) {
+      item.food.push(micronutrient);
+    } else {
+      items.push({ code, food: [micronutrient] });
+    }
+  });
 
-        const micronutrients: Micronutrients = {
-          nameFood: row[1],
-          kcal: row[2],
-          carb: row[3],
-          protein: row[4],
-          fat: row[5],
-          homeUnit: {
-            value: homeUnitValue,
-            unit: homeUnitString,
-          },
-        };
-
-        if (!response.codes.includes(code)) {
-          response.codes.push(code);
-        }
-
-        let item = response.items.find((item) => item.code === code);
-        if (item) {
-          item.food.push(micronutrients);
-        } else {
-          response.items.push({
-            code,
-            food: [micronutrients],
-          });
-        }
-      } catch (innerError) {
-        Logger.log(`Error procesando fila ${index + 2}: ${innerError.message}`);
-      }
-    });
-
-    const currentDate = new Date();
-    const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
-    SpreadsheetApp.getActive().toast(
-      `Datos guardados correctamente el ${formattedDate}`,
-      "✅ ¡Guardado con éxito!"
-    );
-
-    return JSON.stringify(response);
-  } catch (error) {
-    const ui = SpreadsheetApp.getUi();
-    ui.alert(
-      "⚠️ Error al cargar datos",
-      `Hubo un problema cargando los datos de la hoja "db". Por favor contacte al administrador.\n\nError: ${error.message}`,
-      ui.ButtonSet.OK
-    );
-    throw error;
-  }
+  return { items, codes };
 }
 
-function updatePropertiesService(data: string): void {
-  const documentProperties = PropertiesService.getDocumentProperties();
-  documentProperties.setProperty("cachedData", data);
+function getExerciseDatabase(): ExerciseDatabase {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ejercicios");
+  if (!sheet) throw new Error("La hoja 'Ejercicios' no existe.");
+
+  // Obtener datos desde B20 en adelante
+  const startCell = "B20";
+  const range = sheet.getRange(startCell + ":" + sheet.getLastColumn() + sheet.getLastRow());
+  const data = range.getRichTextValues();
+
+  const muscleGroups: string[] = [];
+  const exercises: { muscleGroup: string; exercise: { name: string; url: string }[] }[] = [];
+
+  // Obtener encabezados de los grupos musculares
+  const headers = data[0]; // Primera fila de la tabla desde B20
+  headers.forEach((header, colIndex) => {
+    const muscleGroup = header?.getText().trim();
+    if (muscleGroup) {
+      muscleGroups.push(muscleGroup);
+
+      const exerciseList: { name: string; url: string }[] = [];
+      for (let row = 1; row < data.length; row++) {
+        const cell = data[row][colIndex];
+        const name = cell?.getText().trim();
+        const url = cell?.getLinkUrl() || "";
+        if (name) {
+          exerciseList.push({ name, url });
+        }
+      }
+
+      exercises.push({ muscleGroup, exercise: exerciseList });
+    }
+  });
+
+  return { muscleGroups, exercises };
 }

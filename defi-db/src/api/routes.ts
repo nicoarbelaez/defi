@@ -1,4 +1,4 @@
-function doGet(e): GoogleAppsScript.Content.TextOutput {
+function doGet(e: GoogleAppsScript.Events.DoGet): GoogleAppsScript.Content.TextOutput {
   const jsonResponse = getResponse();
   return ContentService.createTextOutput(jsonResponse).setMimeType(ContentService.MimeType.JSON);
 }
