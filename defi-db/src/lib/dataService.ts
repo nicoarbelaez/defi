@@ -39,7 +39,7 @@ function getItemsAndCodes(): { items: Item[]; codes: string[] } {
 }
 
 function getExerciseDatabase(): ExerciseDatabase {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ejercicios");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("#Ejercicios");
   if (!sheet) throw new Error("La hoja 'Ejercicios' no existe.");
 
   // Obtener datos desde B20 en adelante
