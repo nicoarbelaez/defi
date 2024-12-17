@@ -18,8 +18,10 @@ function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
           `Datos guardados correctamente`,
           "✅ ¡Guardado con éxito!"
         );
+
+        createEntityRelationshipModel();
       },
-      2000
+      3500
     );
 
     debouncedFunction(e);
