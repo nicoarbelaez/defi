@@ -5,6 +5,7 @@ class VariableConst {
   static SHEET_CONFIG = "Configuración";
   static SHEET_EXCHANGES = "INTERCAMBIOS";
   static SHEET_DIET = "Dieta";
+  static SHEET_EXERCISE = "Mes 1";
 
   static TABLE_CODES = "DB_CODES";
   static MUSCLE_GROUP_RANGE = "DB_MUSCLE_GROUP";
