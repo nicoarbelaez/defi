@@ -69,6 +69,12 @@ const insertDataToSheet = (): void => {
     );
     muscleGroupRange.setValues(muscleGroups.map((group) => [group]));
 
+    Utils.createNamedRange(
+      muscleGroupRange.getA1Notation(),
+      VariableConst.MUSCLE_GROUP_RANGE,
+      VariableConst.SHEET_CONFIG
+    );
+
     db.exerciseDatabase.exercises.forEach((group, groupIndex) => {
       const groupColumnOffset = exerciseStartColumn + 1 + groupIndex * 2; // Dos columnas por grupo (name y url)
 
@@ -89,6 +95,12 @@ const insertDataToSheet = (): void => {
           1
         );
         nameRange.setValues(exerciseNames);
+
+        Utils.createNamedRange(
+          nameRange.getA1Notation(),
+          `${VariableConst.PREFIX_EXERCISE_GROUP}_${group.muscleGroup}`.toUpperCase(),
+          VariableConst.SHEET_CONFIG
+        );
       }
 
       if (exerciseUrls.length > 0) {
@@ -99,21 +111,10 @@ const insertDataToSheet = (): void => {
           1
         );
         urlRange.setValues(exerciseUrls);
-      }
-
-      if (exerciseNames.length > 0 || exerciseUrls.length > 0) {
-        const groupRangeAddress = `${sheet
-          .getRange(
-            codesRange.getRow() + 1,
-            groupColumnOffset,
-            Math.max(exerciseNames.length, exerciseUrls.length),
-            1
-          )
-          .getA1Notation()}`;
 
         Utils.createNamedRange(
-          groupRangeAddress,
-          `${VariableConst.PREFIX_EXERCISE_GROUP}_${group.muscleGroup}`.toUpperCase(),
+          urlRange.getA1Notation(),
+          `${VariableConst.PREFIX_EXERCISE_GROUP}_${group.muscleGroup}_URL`.toUpperCase(),
           VariableConst.SHEET_CONFIG
         );
       }

@@ -7,6 +7,7 @@ class VariableConst {
   static SHEET_DIET = "Dieta";
 
   static TABLE_CODES = "DB_CODES";
+  static MUSCLE_GROUP_RANGE = "DB_MUSCLE_GROUP";
   static PREFIX_CODE_FOOD = "DB_FOOD";
   static PREFIX_EXERCISE_GROUP = "DB_EXERCISE";
 }
