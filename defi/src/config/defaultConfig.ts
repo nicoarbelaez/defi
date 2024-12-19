@@ -117,4 +117,23 @@ const exchangeConfig: ConfigTableSection = {
   ],
 };
 
-const defaultConfig: ConfigTable = [dayConfig, listConfig, exchangeConfig];
+const exerciseConfig: ConfigTableSection = {
+  name: "exercise-config",
+  title: {
+    value: [
+      { text: "Configuración de ejercicios", format: { bold: true } },
+      { text: `(Hoja "Mes 1")`, format: { size: 10 } },
+    ],
+    range: "B27:C27",
+  },
+  subtitle: [
+    { value: [{ text: "Descripción", format: { bold: true } }], range: "B19" },
+    { value: [{ text: "Celda", format: { bold: true } }], range: "C19" },
+  ],
+  content: [
+    { value: [{ text: "Tabla semana 1" }], range: "B28" },
+    { value: [{ text: "B3:W16" }], range: "C28", modifiable: true },
+  ],
+};
+
+const defaultConfig: ConfigTable = [dayConfig, listConfig, exchangeConfig, exerciseConfig];
