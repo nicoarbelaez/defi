@@ -1,11 +1,14 @@
 interface ResponseDoGet {
   lastUpdate: string;
-  items: {
-    code: string;
-    food: Micronutrients[];
-  }[];
+  items: Item[];
   codes: string[];
   baseGrams: number;
+  exerciseDatabase: ExerciseDatabase;
+}
+
+interface Item {
+  code: string;
+  food: Micronutrients[];
 }
 
 interface Micronutrients {
@@ -18,4 +21,15 @@ interface Micronutrients {
     value: number;
     unit: string;
   };
+}
+
+interface ExerciseDatabase {
+  muscleGroups: string[];
+  exercises: {
+    muscleGroup: string;
+    exercise: {
+      name: string;
+      url: string;
+    }[];
+  }[];
 }
