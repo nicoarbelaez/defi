@@ -11,6 +11,12 @@ const insertDataToSheet = (): void => {
       return;
     }
 
+    // Limpiar rango existente antes de insertar datos
+    const startCell = sheet.getRange(START_CELL);
+    const maxRows = sheet.getMaxRows() - startCell.getRow() + 1;
+    const maxColumns = sheet.getMaxColumns() - startCell.getColumn() + 1;
+    sheet.getRange(startCell.getRow(), startCell.getColumn(), maxRows, maxColumns).clearContent();
+
     // Insertar `codes`
     Utils.showToast("📋 Insertando códigos", "Añadiendo datos iniciales...");
     const codesRange = sheet.getRange(START_CELL);
