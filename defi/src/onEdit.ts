@@ -27,6 +27,10 @@ function onEditHandler(e: GoogleAppsScript.Events.SheetsOnEdit) {
       range: rangeConfig,
       functions: [handleConfigEdit],
     },
+    [VariableConst.SHEET_EXERCISE]: {
+      range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
+      functions: [handleExerciseEdit],
+    },
   };
 
   const allowedRange = allowedRanges[sheetName];
@@ -37,6 +41,119 @@ function onEditHandler(e: GoogleAppsScript.Events.SheetsOnEdit) {
     allowedRange.range.some((namedRange) => Utils.isCellInRange(cellA1, namedRange))
   ) {
     allowedRange.functions.forEach((func) => func(cellA1));
+  }
+}
+
+/**
+ * Duplica y desplaza un conjunto de rangos hacia la derecha.
+ * @param ranges Rango original, por ejemplo ["A1:A5", "C3:C7"].
+ * @returns Arreglo extendido y desplazado, por ejemplo ["A1:A5", "C3:C7", "B1:B5", "D3:D7"].
+ */
+function extendAndShiftRanges(ranges: string[]): string[] {
+  const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_EXERCISE);
+  const newRanges: string[] = [];
+
+  ranges.forEach((range) => {
+    newRanges.push(range); // Mantener el rango original
+    const originalRange = sheet.getRange(range);
+    const startRow = originalRange.getRow();
+    const endRow = originalRange.getLastRow();
+    const startCol = originalRange.getColumn();
+    const newCol = startCol + 1;
+
+    const shiftedRange = sheet.getRange(startRow, newCol, endRow - startRow + 1, 1).getA1Notation();
+    newRanges.push(shiftedRange); // Agregar el rango desplazado
+  });
+
+  return newRanges;
+}
+
+function handleExerciseEdit(cellA1: string): void {
+  const config = getConfig();
+  const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_EXERCISE);
+  const cellRange = sheet.getRange(cellA1);
+
+  // Verificar si la celda pertenece a un rango de dropdown
+  const dropdownRanges = config.exerciseConfig.rangeDropdown;
+  const isDropdownCell = dropdownRanges.some((range) => Utils.isCellInRange(cellA1, range));
+
+  if (isDropdownCell) {
+    // Crear un dropdown en la celda a la derecha de la editada
+    const cellValue = cellRange.getValue();
+    if (!cellValue) {
+      console.warn(`La celda ${cellA1} está vacía, no se puede crear un dropdown.`);
+      return;
+    }
+
+    const rangeName = `${VariableConst.PREFIX_EXERCISE_GROUP}_${cellValue
+      .toString()
+      .toUpperCase()}`;
+    const nextColumn = cellRange.getColumn() + 1;
+    const nextCell = sheet.getRange(cellRange.getRow(), nextColumn);
+
+    DropDownUtil.createDropDown(sheet, rangeName, nextCell.getA1Notation());
+    console.log(`Dropdown creado en ${nextCell.getA1Notation()} con rango ${rangeName}`);
+  } else {
+    // Obtener el valor de la celda a la izquierda de la editada
+    const leftCell = sheet.getRange(cellRange.getRow(), cellRange.getColumn() - 1);
+    const leftCellValue = leftCell.getValue();
+
+    if (!leftCellValue) {
+      console.warn(`La celda a la izquierda de ${cellA1} está vacía, no se puede procesar.`);
+      return;
+    }
+
+    const namedRangeValuesName = `${VariableConst.PREFIX_EXERCISE_GROUP}_${leftCellValue
+      .toString()
+      .toUpperCase()}`;
+
+    try {
+      // Obtener valores del rango con nombre asociado a la celda editada
+      console.log(namedRangeValuesName);
+      const valuesRange = sheet.getRange(namedRangeValuesName).getValues().flat();
+
+      // Buscar el índice basado en el valor de la celda actual
+      const cellValue = cellRange.getValue();
+      const index = valuesRange.findIndex((value) => value.toString() === cellValue.toString());
+
+      if (index === -1) {
+        console.warn(`El valor "${cellValue}" no se encontró en el rango ${namedRangeValuesName}.`);
+        return;
+      }
+
+      console.log(`El índice del valor "${cellValue}" es ${index}.`);
+
+      // Obtener la URL del rango con nombre
+      const namedRangeURLName = `${namedRangeValuesName}_URL`;
+      console.log(namedRangeURLName);
+      const urlsRange = sheet.getRange(namedRangeURLName).getValues().flat();
+      const url = urlsRange[index];
+
+      if (!url) {
+        console.warn(
+          `No se encontró una URL en el índice ${index} del rango ${namedRangeURLName}.`
+        );
+        return;
+      }
+
+      if (url) {
+        const richValue = SpreadsheetApp.newRichTextValue()
+          .setText(cellValue.toString()) // Texto de la celda editada
+          .setLinkUrl(url) // URL obtenida
+          .build();
+
+        cellRange.setRichTextValue(richValue);
+        console.log(`Hipervínculo añadido a ${cellA1} con la URL: ${url}`);
+      } else {
+        const plainText = SpreadsheetApp.newTextStyle()
+        .setUnderline(false)
+        .setForegroundColor("#000000")
+        .build();
+        cellRange.setTextStyle(plainText)
+      }
+    } catch (error) {
+      console.error(`Error al procesar ${cellA1}: ${error.message}`);
+    }
   }
 }
 
