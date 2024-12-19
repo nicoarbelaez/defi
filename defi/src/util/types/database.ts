@@ -1,12 +1,12 @@
 interface ResponseDoGet {
   lastUpdate: string;
-  items: Item[];
+  items: ItemFood[];
   codes: string[];
   baseGrams: number;
   exerciseDatabase: ExerciseDatabase;
 }
 
-interface Item {
+interface ItemFood {
   code: string;
   food: Micronutrients[];
 }
