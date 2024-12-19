@@ -8,4 +8,5 @@ class VariableConst {
 
   static TABLE_CODES = "DB_CODES";
   static PREFIX_CODE_FOOD = "DB_FOOD";
+  static PREFIX_EXERCISE_GROUP = "DB_EXERCISE";
 }
