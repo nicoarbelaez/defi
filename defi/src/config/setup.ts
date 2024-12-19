@@ -134,6 +134,10 @@ function getConfig(): Config {
       homeMeasurement: "",
     },
     lastUpdate: lastUpdateFromSheet,
+    exerciseConfig: {
+      tabla: "",
+      rangeDropdown: [],
+    },
   };
 
   const sheetConfig: ConfigTable = defaultConfig.map(generateUpdatedConfigSection);
@@ -148,6 +152,9 @@ function getConfig(): Config {
         break;
       case "exchange-config":
         config.exchangeConfig = processExchangeConfig(section.content);
+        break;
+      case "exercise-config":
+        config.exerciseConfig = processExerciseConfig(section.content);
         break;
     }
   });
@@ -249,6 +256,56 @@ const processExchangeConfig = (content: Cell[]): ExchangeConfig => {
   }
 
   return exchangeConfig;
+};
+
+/**
+ * Procesa la configuración de ejercicios.
+ * @param content Lista de celdas con los valores de la configuración de ejercicios.
+ * @returns Un objeto con los valores de la tabla y el rango del dropdown.
+ */
+const processExerciseConfig = (content: Cell[]): { tabla: string; rangeDropdown: string[] } => {
+  const exerciseConfig = {
+    tabla: "",
+    rangeDropdown: [] as string[],
+  };
+
+  content.forEach((cell) => {
+    if (cell.modifiable) {
+      const value = joinCellValue(cell);
+
+      exerciseConfig.tabla = value; // Rango de la tabla, por ejemplo "B3:W16"
+      exerciseConfig.rangeDropdown = generateDropdownRange(value); // Genera el rango para dropdown
+    }
+  });
+
+  return exerciseConfig;
+};
+
+/**
+ * Genera el rango para el dropdown basado en el rango de la tabla.
+ * @param tableRange El rango de la tabla, por ejemplo "B3:W16".
+ * @returns El rango para el dropdown, por ejemplo "B7:B14".
+ */
+const generateDropdownRange = (tableRange: string): string[] => {
+  const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_CONFIG);
+
+  const range = sheet.getRange(tableRange);
+
+  const startRow = range.getRow();
+  const startColumn = range.getColumn();
+  const lastRow = range.getLastRow();
+
+  const dropdownStartRow = startRow + 4;
+  const dropdownEndRow = lastRow - 2;
+
+  const dropdownCells: string[] = [];
+
+  for (let row = dropdownStartRow; row <= dropdownEndRow; row++) {
+    const cell = `${sheet.getRange(row, startColumn).getA1Notation()}`;
+    dropdownCells.push(cell);
+  }
+
+  return dropdownCells;
 };
 
 /**

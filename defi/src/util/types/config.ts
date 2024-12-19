@@ -19,9 +19,15 @@ interface ExchangeConfig {
   homeMeasurement: string;
 }
 
+interface ExerciseConfig {
+  tabla: string;
+  rangeDropdown: string[];
+}
+
 interface Config {
   lastUpdate: string;
   dayConfig: MealPlan[];
   listConfig: string[];
   exchangeConfig: ExchangeConfig;
+  exerciseConfig: ExerciseConfig;
 }
