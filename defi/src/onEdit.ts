@@ -31,6 +31,14 @@ function onEditHandler(e: GoogleAppsScript.Events.SheetsOnEdit) {
       range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
       functions: [handleExerciseEdit],
     },
+    [VariableConst.SHEET_EXERCISE.replace("1", "2")]: {
+      range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
+      functions: [handleExerciseEdit],
+    },
+    [VariableConst.SHEET_EXERCISE.replace("1", "3")]: {
+      range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
+      functions: [handleExerciseEdit],
+    },
   };
 
   const allowedRange = allowedRanges[sheetName];

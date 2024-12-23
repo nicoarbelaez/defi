@@ -93,6 +93,16 @@ function addDropDowns(sheet: GoogleAppsScript.Spreadsheet.Spreadsheet): void {
       cellRanges: config.exerciseConfig.rangeDropdown,
     },
     {
+      sheetName: VariableConst.SHEET_EXERCISE.replace("1", "2"),
+      rangeName: VariableConst.MUSCLE_GROUP_RANGE,
+      cellRanges: config.exerciseConfig.rangeDropdown,
+    },
+    {
+      sheetName: VariableConst.SHEET_EXERCISE.replace("1", "3"),
+      rangeName: VariableConst.MUSCLE_GROUP_RANGE,
+      cellRanges: config.exerciseConfig.rangeDropdown,
+    },
+    {
       sheetName: VariableConst.SHEET_EXCHANGES,
       rangeName: VariableConst.TABLE_CODES,
       cellRanges: [config.exchangeConfig.foodCode],
