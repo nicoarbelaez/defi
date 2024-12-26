@@ -133,6 +133,14 @@ function handleExerciseEdit(cellA1: string): void {
 
       // Buscar el índice basado en el valor de la celda actual
       const cellValue = cellRange.getValue();
+      if (!cellValue) {
+        Utils.showToast(
+          `La celda ${cellA1} no tiene ningún valor para agregar un hipervínculo.`,
+          "⚠️ Advertencia"
+        );
+        return;
+      }
+
       const index = valuesRange.findIndex((value) => value.toString() === cellValue.toString());
 
       if (index === -1) {
