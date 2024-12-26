@@ -81,6 +81,9 @@ function handleExerciseEdit(cellA1: string): void {
   const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_EXERCISE);
   const cellRange = sheet.getRange(cellA1);
 
+  // Mostrar información sobre el rango editado
+  Utils.showToast("🔍 Analizando", `Editando celda: ${cellA1}`);
+
   // Verificar si la celda pertenece a un rango de dropdown
   const dropdownRanges = config.exerciseConfig.rangeDropdown;
   const isDropdownCell = dropdownRanges.some((range) => Utils.isCellInRange(cellA1, range));
@@ -89,7 +92,10 @@ function handleExerciseEdit(cellA1: string): void {
     // Crear un dropdown en la celda a la derecha de la editada
     const cellValue = cellRange.getValue();
     if (!cellValue) {
-      console.warn(`La celda ${cellA1} está vacía, no se puede crear un dropdown.`);
+      Utils.showToast(
+        "⚠️ Advertencia",
+        `La celda ${cellA1} está vacía, no se puede crear un dropdown.`
+      );
       return;
     }
 
@@ -99,15 +105,21 @@ function handleExerciseEdit(cellA1: string): void {
     const nextColumn = cellRange.getColumn() + 1;
     const nextCell = sheet.getRange(cellRange.getRow(), nextColumn);
 
+    Utils.showToast(
+      "📦 Creando dropdown",
+      `En celda ${nextCell.getA1Notation()} con rango ${cellValue}`
+    );
     DropDownUtil.createDropDown(sheet, rangeName, nextCell.getA1Notation());
-    console.log(`Dropdown creado en ${nextCell.getA1Notation()} con rango ${rangeName}`);
   } else {
     // Obtener el valor de la celda a la izquierda de la editada
     const leftCell = sheet.getRange(cellRange.getRow(), cellRange.getColumn() - 1);
     const leftCellValue = leftCell.getValue();
 
     if (!leftCellValue) {
-      console.warn(`La celda a la izquierda de ${cellA1} está vacía, no se puede procesar.`);
+      Utils.showToast(
+        `La celda a la izquierda de ${cellA1} está vacía, no se puede procesar.`,
+        "⚠️ Advertencia"
+      );
       return;
     }
 
@@ -116,8 +128,7 @@ function handleExerciseEdit(cellA1: string): void {
       .toUpperCase()}`;
 
     try {
-      // Obtener valores del rango con nombre asociado a la celda editada
-      console.log(namedRangeValuesName);
+      Utils.showToast("🔍 Buscando valores", `Obteniendo rango asociado: ${namedRangeValuesName}`);
       const valuesRange = sheet.getRange(namedRangeValuesName).getValues().flat();
 
       // Buscar el índice basado en el valor de la celda actual
@@ -125,21 +136,24 @@ function handleExerciseEdit(cellA1: string): void {
       const index = valuesRange.findIndex((value) => value.toString() === cellValue.toString());
 
       if (index === -1) {
-        console.warn(`El valor "${cellValue}" no se encontró en el rango ${namedRangeValuesName}.`);
+        Utils.showToast(
+          `El valor "${cellValue}" no se encontró en el rango ${leftCellValue}.`,
+          "⚠️ Advertencia"
+        );
         return;
       }
 
-      console.log(`El índice del valor "${cellValue}" es ${index}.`);
+      Utils.showToast("🔗 Agregando hipervínculo", `Índice encontrado: ${index}`);
 
       // Obtener la URL del rango con nombre
       const namedRangeURLName = `${namedRangeValuesName}_URL`;
-      console.log(namedRangeURLName);
       const urlsRange = sheet.getRange(namedRangeURLName).getValues().flat();
       const url = urlsRange[index];
 
       if (!url) {
-        console.warn(
-          `No se encontró una URL en el índice ${index} del rango ${namedRangeURLName}.`
+        Utils.showToast(
+          `No se encontró una URL en el índice ${index} del rango ${leftCellValue}.`,
+          "⚠️ Advertencia"
         );
         return;
       }
@@ -151,16 +165,20 @@ function handleExerciseEdit(cellA1: string): void {
           .build();
 
         cellRange.setRichTextValue(richValue);
-        console.log(`Hipervínculo añadido a ${cellA1} con la URL: ${url}`);
+        Utils.showToast(`Hipervínculo añadido a ${cellA1} con la URL: ${url}`, "✅ Éxito");
       } else {
         const plainText = SpreadsheetApp.newTextStyle()
-        .setUnderline(false)
-        .setForegroundColor("#000000")
-        .build();
-        cellRange.setTextStyle(plainText)
+          .setUnderline(false)
+          .setForegroundColor("#000000")
+          .build();
+        cellRange.setTextStyle(plainText);
       }
     } catch (error) {
-      console.error(`Error al procesar ${cellA1}: ${error.message}`);
+      Utils.showAlert(
+        "❌ Error",
+        `Error al procesar ${cellA1}: ${error.message}. Contacte soporte.`,
+        "error"
+      );
     }
   }
 }
