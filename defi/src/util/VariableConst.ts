@@ -3,7 +3,6 @@ class VariableConst {
   static TIME_ONEDIT_KEY = "onedit";
 
   static SHEET_CONFIG = "Configuración";
-  static SHEET_EXCHANGES = "INTERCAMBIOS";
   static SHEET_DIET = "Dieta";
   static SHEET_EXERCISE = "Mes 1";
 

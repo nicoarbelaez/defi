@@ -88,12 +88,12 @@ const listConfig: ConfigTableSection = {
   ],
 };
 
-const exchangeConfig: ConfigTableSection = {
-  name: "exchange-config",
+const exerciseConfig: ConfigTableSection = {
+  name: "exercise-config",
   title: {
     value: [
-      { text: "Configuración de Calculadora de Intercambio", format: { bold: true } },
-      { text: `(Hoja "INTERCAMBIOS")`, format: { size: 10 } },
+      { text: "Configuración de ejercicios", format: { bold: true } },
+      { text: `(Hoja "Mes 1")`, format: { size: 10 } },
     ],
     range: "B18:C18",
   },
@@ -102,38 +102,9 @@ const exchangeConfig: ConfigTableSection = {
     { value: [{ text: "Celda", format: { bold: true } }], range: "C19" },
   ],
   content: [
-    { value: [{ text: "Código de alimento" }], range: "B20" },
-    { value: [{ text: "C20" }], range: "C20", modifiable: true },
-    { value: [{ text: "Alimento a intercambiar" }], range: "B21" },
-    { value: [{ text: "C21" }], range: "C21", modifiable: true },
-    { value: [{ text: "Cantidad pautada" }], range: "B22" },
-    { value: [{ text: "C22" }], range: "C22", modifiable: true },
-    { value: [{ text: "Alimento equivalente" }], range: "B23" },
-    { value: [{ text: "C23" }], range: "C23", modifiable: true },
-    { value: [{ text: "Porción equivalente" }], range: "B24" },
-    { value: [{ text: "C24" }], range: "C24", modifiable: true },
-    { value: [{ text: "Medida casera" }], range: "B25" },
-    { value: [{ text: "C25" }], range: "C25", modifiable: true },
+    { value: [{ text: "Tabla semana 1" }], range: "B20" },
+    { value: [{ text: "B3:W16" }], range: "C20", modifiable: true },
   ],
 };
 
-const exerciseConfig: ConfigTableSection = {
-  name: "exercise-config",
-  title: {
-    value: [
-      { text: "Configuración de ejercicios", format: { bold: true } },
-      { text: `(Hoja "Mes 1")`, format: { size: 10 } },
-    ],
-    range: "B27:C27",
-  },
-  subtitle: [
-    { value: [{ text: "Descripción", format: { bold: true } }], range: "B19" },
-    { value: [{ text: "Celda", format: { bold: true } }], range: "C19" },
-  ],
-  content: [
-    { value: [{ text: "Tabla semana 1" }], range: "B28" },
-    { value: [{ text: "B3:W16" }], range: "C28", modifiable: true },
-  ],
-};
-
-const defaultConfig: ConfigTable = [dayConfig, listConfig, exchangeConfig, exerciseConfig];
+const defaultConfig: ConfigTable = [dayConfig, listConfig, exerciseConfig];

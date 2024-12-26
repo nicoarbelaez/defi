@@ -84,27 +84,6 @@ const validateConfig = (config: Config): void => {
     });
   }
 
-  // Validar exchangeConfig (ExchangeConfig)
-  const exchange = config.exchangeConfig;
-  if (!exchange || typeof exchange !== "object") {
-    invalidFields.push("exchangeConfig: debe ser un objeto válido");
-  } else {
-    const exchangeKeys = [
-      "foodCode",
-      "foodToBeExchanged",
-      "targetQuantity",
-      "equivalentFood",
-      "equivalentPortion",
-      "homeMeasurement",
-    ];
-
-    exchangeKeys.forEach((key) => {
-      if (exchange[key] && !Utils.isValidRange(exchange[key])) {
-        invalidFields.push(`exchangeConfig.${key}: debe tener un formato de celda válido`);
-      }
-    });
-  }
-
   // Si hay campos inválidos, lanza un error con los detalles
   if (invalidFields.length > 0) {
     const errorMessage = `❌ La configuración contiene errores:\n\n${invalidFields.join("\n")}`;
@@ -125,14 +104,6 @@ function getConfig(): Config {
   config = {
     dayConfig: [],
     listConfig: [],
-    exchangeConfig: {
-      foodCode: "",
-      foodToBeExchanged: "",
-      targetQuantity: "",
-      equivalentFood: "",
-      equivalentPortion: "",
-      homeMeasurement: "",
-    },
     lastUpdate: lastUpdateFromSheet,
     exerciseConfig: {
       tabla: "",
@@ -149,9 +120,6 @@ function getConfig(): Config {
         break;
       case "list-config":
         config.listConfig = processListConfig(section.content);
-        break;
-      case "exchange-config":
-        config.exchangeConfig = processExchangeConfig(section.content);
         break;
       case "exercise-config":
         config.exerciseConfig = processExerciseConfig(section.content);
@@ -213,49 +181,6 @@ const processDayConfig = (content: Cell[]): MealPlan[] => {
  */
 const processListConfig = (content: Cell[]): string[] => {
   return content.filter((cell) => cell.modifiable).map((cell) => joinCellValue(cell));
-};
-
-/**
- * Procesa la configuración de intercambios.
- * @param content Lista de celdas con los valores de la configuración de intercambios.
- * @returns Un objeto `ExchangeConfig` con los valores asignados.
- */
-const processExchangeConfig = (content: Cell[]): ExchangeConfig => {
-  const exchangeConfig: ExchangeConfig = {
-    foodCode: "",
-    foodToBeExchanged: "",
-    targetQuantity: "",
-    equivalentFood: "",
-    equivalentPortion: "",
-    homeMeasurement: "",
-  };
-
-  const keys: (keyof ExchangeConfig)[] = Object.keys(exchangeConfig) as (keyof ExchangeConfig)[];
-
-  // Contador manual para recorrer los keys
-  let keyIndex = 0;
-
-  content.forEach((cell) => {
-    if (keyIndex < keys.length && cell.modifiable) {
-      const key = keys[keyIndex];
-      const value = joinCellValue(cell);
-
-      // Solo asignamos si la celda tiene un valor
-      if (value) {
-        exchangeConfig[key] = value;
-        keyIndex++; // Solo aumentamos el índice cuando un campo es llenado
-      }
-    }
-  });
-
-  // Verificación para asegurarse de que todos los campos hayan sido llenados correctamente
-  for (const key of keys) {
-    if (!exchangeConfig[key]) {
-      console.warn(`El campo ${key} no ha sido completado correctamente.`);
-    }
-  }
-
-  return exchangeConfig;
 };
 
 /**

@@ -19,10 +19,6 @@ function onEditHandler(e: GoogleAppsScript.Events.SheetsOnEdit) {
       range: config.dayConfig.flatMap((day) => [day.ranges.table1, day.ranges.table2]),
       functions: [handleDietEdit],
     },
-    [VariableConst.SHEET_EXCHANGES]: {
-      range: Object.values(config.exchangeConfig),
-      functions: [handleExchangeEdit],
-    },
     [VariableConst.SHEET_CONFIG]: {
       range: rangeConfig,
       functions: [handleConfigEdit],
@@ -321,27 +317,6 @@ function handleDietEdit(cellA1: string): void {
       }
     }
   });
-}
-
-function handleExchangeEdit(cellEdit: string) {
-  const config = getConfig().exchangeConfig;
-  const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_EXCHANGES);
-
-  if (getCellValues(sheet, config.foodCode)[0] !== "") {
-    Utils.showToast("Cargando alimentos.", "🛜 Cargando...");
-  }
-
-  if (config.foodCode === cellEdit) {
-    Object.keys(config)
-      .filter((key) => key !== "foodCode")
-      .forEach((key) => clearCellValue(sheet, config[key]));
-
-    TableExchange.insertDropdown();
-    return;
-  }
-
-  const result = TableExchange.calculateExchange();
-  if (result) TableExchange.insertData(result);
 }
 
 function handleConfigEdit(cellA1: string): void {
