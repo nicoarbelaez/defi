@@ -37,6 +37,15 @@ Además, como parte del proyecto, se creó una aplicación utilizando **AppSheet
    clasp login
    ```
 
+4. **Moverse al directorio correspondiente:**
+   - Navega a `/defi-db` o `/defi` según el caso. Esto es importante para asegurar que los archivos correctos estén en la ubicación adecuada antes de realizar la carga.
+
+5. **Vincular tu secuencia de comandos con el ID correspondiente:**
+   ```bash
+   clasp setting scriptId "ID de secuencia de comandos"
+   ```
+   Reemplaza `"ID de secuencia de comandos"` con el ID real de tu proyecto en Google Apps Script.
+
 ## Uso
 
 1. **Subir el proyecto a Google Apps Script:**
