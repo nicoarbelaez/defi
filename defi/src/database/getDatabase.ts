@@ -14,7 +14,19 @@ function getDataBase(validateUpdate: boolean = true): ResponseDoGet {
 
     // Hacer la solicitud GET
     const response = UrlFetchApp.fetch(DATABASE_URL);
-    const fetchedDb: ResponseDoGet = JSON.parse(response.getContentText());
+
+    // Capturar el código de respuesta y el cuerpo
+    const statusCode = response.getResponseCode();
+    const responseBody = response.getContentText();
+
+    // Validar el código de respuesta
+    if (statusCode !== 200) {
+      throw new Error(
+        `El servidor devolvió un código de error: ${statusCode}. Respuesta: ${responseBody}`
+      );
+    }
+
+    const fetchedDb: ResponseDoGet = JSON.parse(responseBody);
 
     // Validar si el JSON retornado tiene estructura válida
     if (!fetchedDb || !fetchedDb.lastUpdate) {
