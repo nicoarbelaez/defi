@@ -39,7 +39,7 @@ class Utils {
   }
 
   static findItemByCodeAndFood(code: string, food: string): Micronutrients | null {
-    const dataFood = getDataBase();
+    const dataFood = getDataBase(false);
     const foods = dataFood.items.find((item) => item.code === code)?.food;
 
     if (foods) {
