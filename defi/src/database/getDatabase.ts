@@ -1,4 +1,4 @@
-function getDataBase(): ResponseDoGet {
+function getDataBase(validateUpdate: boolean = true): ResponseDoGet {
   const DB_KEY = "db"; // Clave para almacenar la base de datos en las propiedades del documento
   const DATABASE_URL =
     "https://script.google.com/macros/s/AKfycbz3d3dXDT2a24xhpzuubKIfynxxu0bnEc4CXMlDiP_Ao5V0QaHO_jMETe3tU1v7gumH/exec";
@@ -6,6 +6,11 @@ function getDataBase(): ResponseDoGet {
   try {
     // Obtener la base de datos local desde las propiedades
     const localDb = DocumentPropertiesService.getProperty(DB_KEY);
+
+    // Si no se requiere validar actualización, devolver localDb directamente
+    if (!validateUpdate && localDb) {
+      return localDb;
+    }
 
     // Hacer la solicitud GET
     const response = UrlFetchApp.fetch(DATABASE_URL);
