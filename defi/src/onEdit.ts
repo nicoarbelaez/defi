@@ -72,13 +72,13 @@ function extendAndShiftRanges(ranges: string[]): string[] {
   return newRanges;
 }
 
-function handleExerciseEdit(cellA1: string, sheetName: string): void {
+function handleExerciseEdit(cellA1: string, sheetName: string, showLog: boolean = true): void {
   const config = getConfig();
   const sheet = SheetUtils.getSheetByName(sheetName);
   const cellRange = sheet.getRange(cellA1);
 
   // Mostrar información sobre el rango editado
-  Utils.showToast("🔍 Analizando", `Editando celda: ${cellA1}`);
+  Utils.showToast("🔍 Analizando", `Editando celda: ${cellA1}`, showLog);
 
   // Verificar si la celda pertenece a un rango de dropdown
   const dropdownRanges = config.exerciseConfig.rangeDropdown;
@@ -90,7 +90,8 @@ function handleExerciseEdit(cellA1: string, sheetName: string): void {
     if (!cellValue) {
       Utils.showToast(
         "⚠️ Advertencia",
-        `La celda ${cellA1} está vacía, no se puede crear un dropdown.`
+        `La celda ${cellA1} está vacía, no se puede crear un dropdown.`,
+        showLog
       );
       return;
     }
@@ -103,7 +104,8 @@ function handleExerciseEdit(cellA1: string, sheetName: string): void {
 
     Utils.showToast(
       "📦 Creando dropdown",
-      `En celda ${nextCell.getA1Notation()} con rango ${cellValue}`
+      `En celda ${nextCell.getA1Notation()} con rango ${cellValue}`,
+      showLog
     );
     DropDownUtil.createDropDown(sheet, rangeName, nextCell.getA1Notation());
   } else {
