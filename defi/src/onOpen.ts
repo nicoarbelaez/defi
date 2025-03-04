@@ -67,10 +67,11 @@ function onOpenHandler() {
   } else {
     existeConfig ?? checkAndCreateConfig();
   }
-  insertDataToSheet();
+  const isDataInserted = insertDataToSheet();
 
-  addDropDowns(sheet);
-  processExerciseCells();
+  if (isDataInserted) {
+    updateDropDownsAndExerciseCells(sheet);
+  }
 }
 
 /**
@@ -142,10 +143,23 @@ function processExerciseCells(): void {
               .getRange(range)
               .getCell(rowIndex + 1, colIndex + 1)
               .getA1Notation();
-            handleExerciseEdit(cellA1, sheetName);
+            handleExerciseEdit(cellA1, sheetName, false);
           }
         });
       });
     });
   });
+}
+
+function updateDropDownsAndExerciseCells(sheet: GoogleAppsScript.Spreadsheet.Spreadsheet): void {
+  Utils.showToast(
+    "🔄 Empezando la actualización de listas desplegables y celdas de ejercicios... Esto puede tardar algunos minutos.",
+    "Información"
+  );
+  addDropDowns(sheet);
+  processExerciseCells();
+  Utils.showToast(
+    "✅ Listas desplegables y celdas de ejercicios actualizadas correctamente.",
+    "Éxito"
+  );
 }
