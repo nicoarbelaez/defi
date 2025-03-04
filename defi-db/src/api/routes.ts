@@ -5,7 +5,7 @@ function doGet(e: GoogleAppsScript.Events.DoGet): GoogleAppsScript.Content.TextO
 
 function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
   const sheetName = e.source.getActiveSheet().getName();
-  const sheetsToWatch = ["db", "Ejercicios"];
+  const sheetsToWatch = ["db", "#Ejercicios"];
 
   if (sheetsToWatch.includes(sheetName)) {
     const debouncedFunction = debounce(
