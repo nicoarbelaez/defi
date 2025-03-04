@@ -44,7 +44,7 @@ function onEditHandler(e: GoogleAppsScript.Events.SheetsOnEdit) {
     allowedRange.range &&
     allowedRange.range.some((namedRange) => Utils.isCellInRange(cellA1, namedRange))
   ) {
-    allowedRange.functions.forEach((func) => func(cellA1));
+    allowedRange.functions.forEach((func) => func(cellA1, sheetName));
   }
 }
 
@@ -72,9 +72,9 @@ function extendAndShiftRanges(ranges: string[]): string[] {
   return newRanges;
 }
 
-function handleExerciseEdit(cellA1: string): void {
+function handleExerciseEdit(cellA1: string, sheetName: string): void {
   const config = getConfig();
-  const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_EXERCISE);
+  const sheet = SheetUtils.getSheetByName(sheetName);
   const cellRange = sheet.getRange(cellA1);
 
   // Mostrar información sobre el rango editado
