@@ -1,4 +1,4 @@
-const insertDataToSheet = (): void => {
+const insertDataToSheet = (): boolean => {
   try {
     Utils.showToast("📂 Preparando datos", "Recopilando información de la base de datos...");
 
@@ -8,7 +8,7 @@ const insertDataToSheet = (): void => {
     const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_CONFIG);
     if (db.lastUpdate == sheet.getRange("A1").getValue()) {
       Utils.showToast("⏳ Datos ya actualizados", "No se realizaron cambios.");
-      return;
+      return false;
     }
 
     // Limpiar rango existente antes de insertar datos
@@ -130,4 +130,5 @@ const insertDataToSheet = (): void => {
     Utils.showAlert("❌ Error al insertar datos", error.message, "error");
     throw error;
   }
+  return true;
 };
