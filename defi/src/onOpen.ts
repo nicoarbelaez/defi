@@ -70,6 +70,7 @@ function onOpenHandler() {
   insertDataToSheet();
 
   addDropDowns(sheet);
+  processExerciseCells();
 }
 
 /**
@@ -118,5 +119,33 @@ function addDropDowns(sheet: GoogleAppsScript.Spreadsheet.Spreadsheet): void {
         DropDownUtil.createDropDown(dropdownSheet, rangeName, range);
       });
     }
+  });
+}
+
+function processExerciseCells(): void {
+  const config = getConfig();
+  const exerciseSheets = [1, 2, 3].map((num) =>
+    VariableConst.SHEET_EXERCISE.replace("1", num.toString())
+  );
+
+  exerciseSheets.forEach((sheetName) => {
+    const exerciseSheet = SheetUtils.getSheetByName(sheetName);
+    if (!exerciseSheet) {
+      return;
+    }
+    config.exerciseConfig.rangeDropdown.forEach((range) => {
+      const rangeValues = exerciseSheet.getRange(range).getValues();
+      rangeValues.forEach((row, rowIndex) => {
+        row.forEach((cellValue, colIndex) => {
+          if (cellValue !== "") {
+            const cellA1 = exerciseSheet
+              .getRange(range)
+              .getCell(rowIndex + 1, colIndex + 1)
+              .getA1Notation();
+            handleExerciseEdit(cellA1, sheetName);
+          }
+        });
+      });
+    });
   });
 }
