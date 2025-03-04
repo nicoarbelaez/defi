@@ -14,10 +14,17 @@
   ],
   "runtimeVersion": "V8",
   "sheets": {
-    "macros": [{
-      "menuName": "Iniciar triggers",
-      "functionName": "initializeProject",
-      "defaultShortcut": "Ctrl+Alt+Shift+1"
-    }]
+    "macros": [
+      {
+        "menuName": "Iniciar triggers",
+        "functionName": "initializeProject",
+        "defaultShortcut": "Ctrl+Alt+Shift+1"
+      },
+      {
+        "menuName": "Ajustar listas",
+        "functionName": "updateDropDownsAndExerciseCells",
+        "defaultShortcut": "Ctrl+Alt+Shift+9"
+      }
+    ]
   }
 }
