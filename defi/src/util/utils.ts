@@ -183,7 +183,13 @@ class Utils {
     return sheet.getRange(row, col).getA1Notation();
   }
 
-  static showToast = (message: string, title: string = "ℹ️ Información"): void => {
+  static showToast = (
+    message: string,
+    title: string = "ℹ️ Información",
+    show: boolean = true
+  ): void => {
+    if (!show) return;
+
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
     spreadsheet.toast(message, title);
   };
@@ -191,8 +197,11 @@ class Utils {
   static showAlert(
     titleAlert: string | null,
     message: string,
-    type: "info" | "warning" | "error" = "info"
+    type: "info" | "warning" | "error" = "info",
+    show: boolean = true
   ): void {
+    if (!show) return;
+
     let title = "";
     switch (type) {
       case "info":
