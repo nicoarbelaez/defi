@@ -1,11 +1,14 @@
 function generateResponse(): string {
+  // --- DESHABILITADO: items y codes de alimentos ---
+  /*
   const { items, codes } = getItemsAndCodes();
+  */
   const exerciseDatabase = getExerciseDatabase();
 
   const response: DoGetResponse = {
     lastUpdate: new Date().toISOString(),
-    items,
-    codes,
+    items: [], // Deshabilitado
+    codes: [], // Deshabilitado
     baseGrams: 100,
     exerciseDatabase,
   };

@@ -1,3 +1,6 @@
+// --- DESHABILITADO: Funciones relacionadas con la hoja "db" y alimentos ---
+
+/*
 function getItemsAndCodes(): { items: Item[]; codes: string[] } {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("db");
   if (!sheet) throw new Error("La hoja 'db' no existe.");
@@ -37,6 +40,7 @@ function getItemsAndCodes(): { items: Item[]; codes: string[] } {
 
   return { items, codes };
 }
+*/
 
 function getExerciseDatabase(): ExerciseDatabase {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("#Ejercicios");

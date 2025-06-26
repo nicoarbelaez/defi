@@ -3,8 +3,14 @@ function createEntityRelationshipModel(): void {
 
   // Obtener respuesta actual
   const jsonResponse: DoGetResponse = JSON.parse(getResponse());
+  // --- DESHABILITADO: codes y items de alimentos ---
+  /*
   const { codes, items, exerciseDatabase } = jsonResponse;
+  */
+  const { exerciseDatabase } = jsonResponse;
 
+  // --- SE DESHABILITA LA ACTUALIZACIÓN DE "codigo_alimentos" Y "alimentos" ---
+  /*
   // Preparar datos para las hojas
   const foodCodesData = codes.map((code, index) => [index + 1, code || null]);
   const foodItemsData: any[] = [];
@@ -26,25 +32,6 @@ function createEntityRelationshipModel(): void {
         food.fat ?? null,
         homeUnitValue,
         homeUnitName,
-      ]);
-    });
-  });
-
-  const exerciseCodesData = exerciseDatabase.muscleGroups.map((group, index) => [
-    index + 1,
-    group || null,
-  ]);
-  const exerciseItemsData: any[] = [];
-  let exerciseItemId = 1;
-
-  exerciseDatabase.exercises.forEach((exerciseGroup, groupIndex) => {
-    const muscleGroupId = groupIndex + 1;
-    exerciseGroup.exercise.forEach((exercise) => {
-      exerciseItemsData.push([
-        exerciseItemId++,
-        muscleGroupId,
-        exercise.name || null,
-        exercise.url || null,
       ]);
     });
   });
@@ -80,6 +67,27 @@ function createEntityRelationshipModel(): void {
       .getRange(2, 1, foodItemsData.length, foodItemsData[0].length)
       .setValues(foodItemsData);
   }
+  */
+  // --- FIN DESHABILITADO ---
+
+  const exerciseCodesData = exerciseDatabase.muscleGroups.map((group, index) => [
+    index + 1,
+    group || null,
+  ]);
+  const exerciseItemsData: any[] = [];
+  let exerciseItemId = 1;
+
+  exerciseDatabase.exercises.forEach((exerciseGroup, groupIndex) => {
+    const muscleGroupId = groupIndex + 1;
+    exerciseGroup.exercise.forEach((exercise) => {
+      exerciseItemsData.push([
+        exerciseItemId++,
+        muscleGroupId,
+        exercise.name || null,
+        exercise.url || null,
+      ]);
+    });
+  });
 
   // Actualizar hoja "codigo_ejercicios"
   const exerciseCodesSheet =
