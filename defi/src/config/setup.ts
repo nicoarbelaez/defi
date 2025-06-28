@@ -226,7 +226,7 @@ const generateDropdownRange = (tableRange: string): string[] => {
 
   // Constantes de configuración
   const rowIncrement = 10; // Número de filas a incrementar en cada iteración
-  const columnIncrement = 23; // Número de columnas a incrementar después de un conjunto de iteraciones de filas
+  const columnIncrement = 29; // Número de columnas a incrementar después de un conjunto de iteraciones de filas
   const rowIterations = 6; // Número de incrementos de filas por columna
   const columnIterations = 4; // Número de incrementos de columnas
 

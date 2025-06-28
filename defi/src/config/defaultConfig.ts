@@ -103,7 +103,7 @@ const exerciseConfig: ConfigTableSection = {
   ],
   content: [
     { value: [{ text: "Tabla semana 1" }], range: "B20" },
-    { value: [{ text: "B3:W16" }], range: "C20", modifiable: true },
+    { value: [{ text: "B3:Y16" }], range: "C20", modifiable: true },
   ],
 };
 
