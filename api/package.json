@@ -1,0 +1,23 @@
+{
+  "name": "muscle-api",
+  "version": "1.0.0",
+  "description": "API para renderizar músculos marcados en SVG según parámetros",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/app.js",
+    "start": "node src/app.js"
+  },
+  "keywords": ["express", "svg", "sharp", "cheerio", "muscles", "api"],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.12.4",
+  "dependencies": {
+    "express": "^5.1.0",
+    "cheerio": "^1.1.0",
+    "sharp": "^0.34.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="600" viewBox="0 0 300 600">
+    <!-- Silueta del cuerpo -->
+    <!-- <rect width="100%" height="100%" fill="#f5f5f5"/> -->
+
+    <!-- Músculos frontales -->
+    <g id="pectoral">
+        <path d="M100,100 C120,90 180,90 200,100 L200,150 C180,140 120,140 100,150 Z" fill="#eee" />
+    </g>
+    <g id="biceps">
+        <circle cx="120" cy="200" r="20" fill="#eee" />
+    </g>
+    <g id="abdomen">
+        <rect x="140" y="160" width="20" height="60" fill="#eee" />
+    </g>
+    <g id="quadriceps">
+        <rect x="160" y="260" width="20" height="60" fill="#eee" />
+    </g>
+    <!-- Puedes añadir más grupos para cada músculo -->
+</svg>
