@@ -104,11 +104,11 @@ function addDropDowns(sheet: GoogleAppsScript.Spreadsheet.Spreadsheet): void {
       rangeName: VariableConst.MUSCLE_GROUP_RANGE,
       cellRanges: config.exerciseConfig.rangeDropdown,
     },
-    {
-      sheetName: VariableConst.SHEET_DIET,
-      rangeName: VariableConst.TABLE_CODES,
-      cellRanges: allDayCells,
-    },
+    // {
+    //   sheetName: VariableConst.SHEET_DIET,
+    //   rangeName: VariableConst.TABLE_CODES,
+    //   cellRanges: allDayCells,
+    // },
   ];
 
   dropdowns.forEach((dropdown) => {
