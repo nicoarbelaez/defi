@@ -13,6 +13,7 @@ interface MealPlan {
 interface ExerciseConfig {
   tabla: string;
   rangeDropdown: string[];
+  intensificationTechniquesDropdown: string[];
 }
 
 interface Config {

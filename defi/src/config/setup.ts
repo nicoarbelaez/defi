@@ -108,6 +108,7 @@ function getConfig(): Config {
     exerciseConfig: {
       tabla: "",
       rangeDropdown: [],
+      intensificationTechniquesDropdown: [],
     },
   };
 
@@ -188,18 +189,19 @@ const processListConfig = (content: Cell[]): string[] => {
  * @param content Lista de celdas con los valores de la configuración de ejercicios.
  * @returns Un objeto con los valores de la tabla y el rango del dropdown.
  */
-const processExerciseConfig = (content: Cell[]): { tabla: string; rangeDropdown: string[] } => {
-  const exerciseConfig = {
+const processExerciseConfig = (content: Cell[]): ExerciseConfig => {
+  const exerciseConfig: ExerciseConfig = {
     tabla: "",
-    rangeDropdown: [] as string[],
+    rangeDropdown: [],
+    intensificationTechniquesDropdown: [],
   };
 
   content.forEach((cell) => {
     if (cell.modifiable) {
       const value = joinCellValue(cell);
-
-      exerciseConfig.tabla = value; // Rango de la tabla, por ejemplo "B3:W16"
-      exerciseConfig.rangeDropdown = generateDropdownRange(value); // Genera el rango para dropdown
+      exerciseConfig.tabla = value;
+      exerciseConfig.rangeDropdown = generateDropdownRange(value, 0);
+      exerciseConfig.intensificationTechniquesDropdown = generateDropdownRange(value, 5);
     }
   });
 
@@ -211,45 +213,36 @@ const processExerciseConfig = (content: Cell[]): { tabla: string; rangeDropdown:
  * @param {string} tableRange - El rango inicial de la tabla en notación A1 (por ejemplo, "B3:W16").
  * @returns {string[]} - Una lista plana de rangos para el dropdown (por ejemplo, ["B7:B14", "B24:B31", ...]).
  */
-const generateDropdownRange = (tableRange: string): string[] => {
+const generateDropdownRange = (tableRange: string, columnOffset: number = 0): string[] => {
   const sheet = SheetUtils.getSheetByName(VariableConst.SHEET_CONFIG);
   const range = sheet.getRange(tableRange);
 
-  // Detalles del rango inicial
   const startRow = range.getRow();
-  const startColumn = range.getColumn();
+  const startColumn = range.getColumn() + columnOffset;
   const lastRow = range.getLastRow();
 
-  // Ajustes fijos para el rango inicial del dropdown
   const adjustedStartRow = startRow + 4;
   const adjustedEndRow = lastRow - 2;
 
-  // Constantes de configuración
-  const rowIncrement = 10; // Número de filas a incrementar en cada iteración
-  const columnIncrement = 29; // Número de columnas a incrementar después de un conjunto de iteraciones de filas
-  const rowIterations = 6; // Número de incrementos de filas por columna
-  const columnIterations = 4; // Número de incrementos de columnas
+  const rowIncrement = 10;
+  const columnIncrement = 29;
+  const rowIterations = 6;
+  const columnIterations = 4;
 
   const dropdownRanges: string[] = [];
 
-  // Iterar a través de las columnas
   for (let columnStep = 0; columnStep < columnIterations; columnStep++) {
     const currentColumn = startColumn + columnStep * columnIncrement;
-
-    // Variables para el seguimiento de las filas
     let currentStartRow = adjustedStartRow;
     let currentEndRow = adjustedEndRow;
 
-    // Iterar a través de las filas para cada columna
     for (let rowStep = 0; rowStep < rowIterations; rowStep++) {
-      // Obtener la notación del rango para la iteración actual
       const rangeNotation = `${sheet
         .getRange(currentStartRow, currentColumn)
         .getA1Notation()}:${sheet.getRange(currentEndRow, currentColumn).getA1Notation()}`;
       dropdownRanges.push(rangeNotation);
 
-      // Actualizar las filas para la siguiente iteración
-      currentStartRow = currentEndRow + rowIncrement; // El siguiente inicio se calcula sumando 10 a la última fila del rango actual
+      currentStartRow = currentEndRow + rowIncrement;
       currentEndRow = currentStartRow + (adjustedEndRow - adjustedStartRow);
     }
   }

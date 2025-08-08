@@ -82,11 +82,11 @@ function addDropDowns(sheet: GoogleAppsScript.Spreadsheet.Spreadsheet): void {
   const config = getConfig();
 
   // Combinar las celdas de todas las tablas de los días
-  const allDayCells = config.dayConfig.flatMap((day) => {
-    const table1Cells = TableFood.processRangeToUniqueCells(day.ranges.table1);
-    const table2Cells = TableFood.processRangeToUniqueCells(day.ranges.table2);
-    return [...table1Cells, ...table2Cells];
-  });
+  // const allDayCells = config.dayConfig.flatMap((day) => {
+  //   const table1Cells = TableFood.processRangeToUniqueCells(day.ranges.table1);
+  //   const table2Cells = TableFood.processRangeToUniqueCells(day.ranges.table2);
+  //   return [...table1Cells, ...table2Cells];
+  // });
 
   const dropdowns = [
     {
@@ -95,14 +95,29 @@ function addDropDowns(sheet: GoogleAppsScript.Spreadsheet.Spreadsheet): void {
       cellRanges: config.exerciseConfig.rangeDropdown,
     },
     {
+      sheetName: VariableConst.SHEET_EXERCISE,
+      rangeName: VariableConst.INTENSIFICATION_TECHNIQUES,
+      cellRanges: config.exerciseConfig.intensificationTechniquesDropdown,
+    },
+    {
       sheetName: VariableConst.SHEET_EXERCISE.replace("1", "2"),
       rangeName: VariableConst.MUSCLE_GROUP_RANGE,
       cellRanges: config.exerciseConfig.rangeDropdown,
     },
     {
+      sheetName: VariableConst.SHEET_EXERCISE.replace("1", "2"),
+      rangeName: VariableConst.INTENSIFICATION_TECHNIQUES,
+      cellRanges: config.exerciseConfig.intensificationTechniquesDropdown,
+    },
+    {
       sheetName: VariableConst.SHEET_EXERCISE.replace("1", "3"),
       rangeName: VariableConst.MUSCLE_GROUP_RANGE,
       cellRanges: config.exerciseConfig.rangeDropdown,
+    },
+    {
+      sheetName: VariableConst.SHEET_EXERCISE.replace("1", "3"),
+      rangeName: VariableConst.INTENSIFICATION_TECHNIQUES,
+      cellRanges: config.exerciseConfig.intensificationTechniquesDropdown,
     },
     // {
     //   sheetName: VariableConst.SHEET_DIET,
