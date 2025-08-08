@@ -155,7 +155,7 @@ const insertDataToSheet = (): boolean => {
       // Crear rangos con nombre para las técnicas
       Utils.createNamedRange(
         nameRange.getA1Notation(),
-        "INTENSIFICATION_TECHNIQUES",
+        VariableConst.INTENSIFICATION_TECHNIQUES,
         VariableConst.SHEET_CONFIG
       );
     }
