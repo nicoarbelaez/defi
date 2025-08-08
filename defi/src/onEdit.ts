@@ -27,13 +27,25 @@ function onEditHandler(e: GoogleAppsScript.Events.SheetsOnEdit) {
       range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
       functions: [handleExerciseEdit],
     },
+    [VariableConst.SHEET_EXERCISE]: {
+      range: extendAndShiftRanges(config.exerciseConfig.intensificationTechniquesDropdown),
+      functions: [handleIntensificationTechniquesEdit],
+    },
     [VariableConst.SHEET_EXERCISE.replace("1", "2")]: {
       range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
       functions: [handleExerciseEdit],
     },
+    [VariableConst.SHEET_EXERCISE.replace("1", "2")]: {
+      range: extendAndShiftRanges(config.exerciseConfig.intensificationTechniquesDropdown),
+      functions: [handleIntensificationTechniquesEdit],
+    },
     [VariableConst.SHEET_EXERCISE.replace("1", "3")]: {
       range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
       functions: [handleExerciseEdit],
+    },
+    [VariableConst.SHEET_EXERCISE.replace("1", "3")]: {
+      range: extendAndShiftRanges(config.exerciseConfig.intensificationTechniquesDropdown),
+      functions: [handleIntensificationTechniquesEdit],
     },
   };
 
@@ -187,6 +199,91 @@ function handleExerciseEdit(cellA1: string, sheetName: string, showLog: boolean 
       );
     }
   }
+}
+
+function handleIntensificationTechniquesEdit(
+  cellA1: string,
+  sheetName: string,
+  showLog: boolean = true
+): void {
+  const sheet = SheetUtils.getSheetByName(sheetName);
+  const cellRange = sheet.getRange(cellA1);
+
+  Utils.showToast("🔍 Analizando", `Editando técnica de intensificación: ${cellA1}`, showLog);
+
+  try {
+    const cellValue = cellRange.getValue();
+    if (!cellValue) {
+      Utils.showToast(
+        "⚠️ Advertencia",
+        `La celda ${cellA1} está vacía, no se puede procesar.`,
+        showLog
+      );
+      return;
+    }
+
+    Utils.showToast("🔍 Buscando valores", `Obteniendo técnica: ${cellValue}`);
+
+    // Obtener los valores y URLs del rango nombrado
+    const valuesRange = sheet.getRange(VariableConst.INTENSIFICATION_TECHNIQUES).getValues().flat();
+    const urlsRange = sheet
+      .getRange(`${VariableConst.INTENSIFICATION_TECHNIQUES}_URL`)
+      .getValues()
+      .flat();
+
+    // Buscar el índice del valor en el array de valores
+    const index = valuesRange.findIndex((value) => value.toString() === cellValue.toString());
+
+    if (index === -1) {
+      Utils.showToast(
+        `El valor "${cellValue}" no se encontró en las técnicas de intensificación.`,
+        "⚠️ Advertencia"
+      );
+      return;
+    }
+
+    const url = urlsRange[index];
+
+    if (url) {
+      Utils.showToast("🔗 Agregando hipervínculo", `URL encontrada para: ${cellValue}`);
+
+      const richValue = SpreadsheetApp.newRichTextValue()
+        .setText(cellValue.toString())
+        .setLinkUrl(url)
+        .build();
+
+      cellRange.setRichTextValue(richValue);
+      Utils.showToast(`Hipervínculo añadido a ${cellA1}`, "✅ Éxito", showLog);
+    } else {
+      resetCellFormat(cellRange);
+      Utils.showToast(
+        `No se encontró una URL para la técnica: ${cellValue}`,
+        "⚠️ Advertencia",
+        showLog
+      );
+    }
+  } catch (error) {
+    resetCellFormat(cellRange);
+    Utils.showAlert(
+      "❌ Error",
+      `Error al procesar técnica de intensificación en ${cellA1}: ${error.message}`,
+      "error"
+    );
+  }
+}
+
+function resetCellFormat(cellRange: GoogleAppsScript.Spreadsheet.Range): void {
+  const plainText = SpreadsheetApp.newTextStyle()
+    .setUnderline(false)
+    .setForegroundColor("#000000")
+    .build();
+
+  const richText = SpreadsheetApp.newRichTextValue()
+    .setText(cellRange.getValue().toString())
+    .setTextStyle(plainText)
+    .build();
+
+  cellRange.setRichTextValue(richText);
 }
 
 // function handleDietEdit(cellA1: string): void {
