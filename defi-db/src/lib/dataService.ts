@@ -136,3 +136,28 @@ function getExerciseDatabase(): ExerciseDatabase {
 
   return { muscleGroups, exercises };
 }
+
+function getIntensificationTechniques(): IntensificationTechniques[] {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Enlaces");
+  if (!sheet) throw new Error("La hoja 'Enlaces' no existe.");
+
+  // Obtener el último número de fila con datos específicamente en la columna H
+  const lastRow = sheet.getRange("H:H").getLastRow();
+
+  // Si no hay datos después de la fila 7, retornar array vacío
+  if (lastRow < 7) return [];
+
+  // Obtener el rango desde H7 hasta I{última fila}
+  const range = sheet.getRange(`H7:I${lastRow}`);
+  const data = range.getValues();
+
+  // Filtrar y mapear los datos a la estructura requerida
+  const techniques: IntensificationTechniques[] = data
+    .filter((row) => row[0] !== "") // Filtrar filas vacías
+    .map((row) => ({
+      name: row[0].toString().trim(),
+      url: row[1].toString().trim(),
+    }));
+
+  return techniques;
+}

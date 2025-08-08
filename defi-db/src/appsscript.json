@@ -8,5 +8,13 @@
   },
   "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8",
-  "sheets": {}
+  "sheets": {
+    "macros": [
+      {
+        "menuName": "Forzar actualización",
+        "functionName": "updateDataAndModel",
+        "defaultShortcut": "Ctrl+Alt+Shift+1"
+      }
+    ]
+  }
 }

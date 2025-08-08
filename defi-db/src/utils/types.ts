@@ -4,6 +4,7 @@ interface DoGetResponse {
   codes: string[];
   baseGrams: number;
   exerciseDatabase: ExerciseDatabase;
+  intensificationTechniques: IntensificationTechniques[];
 }
 
 interface Item {
@@ -32,4 +33,9 @@ interface ExerciseDatabase {
       url: string;
     }[];
   }[];
+}
+
+interface IntensificationTechniques {
+  name: string;
+  url: string;
 }

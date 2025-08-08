@@ -1,6 +1,7 @@
 function generateResponse(): string {
   const { items, codes } = getItemsAndCodes();
   const exerciseDatabase = getExerciseDatabase();
+  const intensificationTechniques = getIntensificationTechniques();
   const lastUpdate = new Date().toISOString();
 
   const response: DoGetResponse = {
@@ -9,6 +10,7 @@ function generateResponse(): string {
     codes,
     baseGrams: 100,
     exerciseDatabase,
+    intensificationTechniques,
   };
 
   PropertiesService.getDocumentProperties().setProperty("lastUpdate", lastUpdate);
