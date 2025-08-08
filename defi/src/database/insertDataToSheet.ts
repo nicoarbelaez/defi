@@ -120,6 +120,46 @@ const insertDataToSheet = (): boolean => {
       }
     });
 
+    // Insertar IntensificationTechniques
+    const techniquesStartColumn =
+      exerciseStartColumn + db.exerciseDatabase.muscleGroups.length * 2 + 2; // Espacio después de ejercicios
+
+    // Insertar encabezados
+    const techniquesNameHeader = sheet.getRange(codesRange.getRow(), techniquesStartColumn);
+    techniquesNameHeader.setValue("intensification_technique");
+
+    const techniquesUrlHeader = sheet.getRange(codesRange.getRow(), techniquesStartColumn + 1);
+    techniquesUrlHeader.setValue("technique_url");
+
+    // Insertar datos
+    if (db.intensificationTechniques && db.intensificationTechniques.length > 0) {
+      const techniqueNames = db.intensificationTechniques.map((technique) => [technique.name]);
+      const techniqueUrls = db.intensificationTechniques.map((technique) => [technique.url]);
+
+      const nameRange = sheet.getRange(
+        codesRange.getRow() + 1,
+        techniquesStartColumn,
+        techniqueNames.length,
+        1
+      );
+      nameRange.setValues(techniqueNames);
+
+      const urlRange = sheet.getRange(
+        codesRange.getRow() + 1,
+        techniquesStartColumn + 1,
+        techniqueUrls.length,
+        1
+      );
+      urlRange.setValues(techniqueUrls);
+
+      // Crear rangos con nombre para las técnicas
+      Utils.createNamedRange(
+        nameRange.getA1Notation(),
+        "INTENSIFICATION_TECHNIQUES",
+        VariableConst.SHEET_CONFIG
+      );
+    }
+
     sheet.getRange("A1").setValue(db.lastUpdate);
 
     Utils.showToast(

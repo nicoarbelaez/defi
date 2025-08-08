@@ -4,6 +4,7 @@ interface ResponseDoGet {
   codes: string[];
   baseGrams: number;
   exerciseDatabase: ExerciseDatabase;
+  intensificationTechniques: IntensificationTechniques[];
 }
 
 interface ItemFood {
@@ -32,4 +33,9 @@ interface ExerciseDatabase {
       url: string;
     }[];
   }[];
+}
+
+interface IntensificationTechniques {
+  name: string;
+  url: string;
 }
