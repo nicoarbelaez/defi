@@ -158,6 +158,12 @@ const insertDataToSheet = (): boolean => {
         VariableConst.INTENSIFICATION_TECHNIQUES,
         VariableConst.SHEET_CONFIG
       );
+      // Crear rangos con nombre para las técnicas de la URL
+      Utils.createNamedRange(
+        urlRange.getA1Notation(),
+        VariableConst.INTENSIFICATION_TECHNIQUES + "_URL",
+        VariableConst.SHEET_CONFIG
+      );
     }
 
     sheet.getRange("A1").setValue(db.lastUpdate);
