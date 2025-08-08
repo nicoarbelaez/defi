@@ -111,14 +111,12 @@ function addDropDowns(sheet: GoogleAppsScript.Spreadsheet.Spreadsheet): void {
     // },
   ];
 
-  dropdowns.forEach((dropdown) => {
-    const { sheetName, rangeName, cellRanges } = dropdown;
+  dropdowns.forEach(({ sheetName, rangeName, cellRanges }) => {
     const dropdownSheet = SheetUtils.getSheetByName(sheetName);
 
     if (cellRanges && cellRanges.length > 0) {
-      cellRanges.forEach((range) => {
-        DropDownUtil.createDropDown(dropdownSheet, rangeName, range);
-      });
+      // Ahora pasamos todo el array de rangos de una vez
+      DropDownUtil.createDropDown(dropdownSheet, rangeName, cellRanges);
     }
   });
 }

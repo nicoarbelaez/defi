@@ -1,15 +1,14 @@
 class DropDownUtil {
   /**
-   * Crea o reemplaza un dropdown en una celda específica de una hoja de cálculo.
-   * Si el rango con nombre no existe o ocurre un error, elimina el dropdown existente.
-   * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - Hoja donde se insertará el dropdown.
+   * Crea o reemplaza dropdowns en múltiples celdas de una hoja de cálculo.
+   * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - Hoja donde se insertarán los dropdowns.
    * @param {string} rangeName - Nombre del rango con nombre que se utilizará como fuente de datos.
-   * @param {string} cellRange - El rango de la celda donde se insertará el dropdown (por ejemplo, "B2").
+   * @param {string[]} cellRanges - Array de rangos donde se insertarán los dropdowns.
    */
   static createDropDown(
     sheet: GoogleAppsScript.Spreadsheet.Sheet,
     rangeName: string,
-    cellRange: string
+    cellRanges: string[]
   ): void {
     try {
       // Intentar obtener el rango con nombre
@@ -21,16 +20,27 @@ class DropDownUtil {
       // Crear regla de validación de datos con el rango obtenido
       const rule = SpreadsheetApp.newDataValidation().requireValueInRange(range, true).build();
 
-      // Establecer la regla en el rango de celdas especificado
-      const cell = sheet.getRange(cellRange);
-      cell.setDataValidation(rule);
+      // Si solo hay un rango, procesarlo directamente
+      if (cellRanges.length === 1) {
+        sheet.getRange(cellRanges[0]).setDataValidation(rule);
+        return;
+      }
+
+      // Para múltiples rangos, combinarlos en una única operación
+      const mergedRange = sheet.getRangeList(cellRanges);
+      if (mergedRange) {
+        // RangeList does not have setDataValidation, so apply to each range
+        mergedRange.getRanges().forEach((range) => range.setDataValidation(rule));
+      }
     } catch (error) {
       console.warn(
-        `Error creando dropdown para ${cellRange} con el rango "${rangeName}": ${error.message}`
+        `Error creando dropdowns para rangos [${cellRanges.join(
+          ", "
+        )}] con el rango "${rangeName}": ${error.message}`
       );
 
-      // Eliminar dropdown existente si ocurre un error
-      this.removeDropDown(sheet, cellRange);
+      // Eliminar dropdowns existentes si ocurre un error
+      cellRanges.forEach((cellRange) => this.removeDropDown(sheet, cellRange));
     }
   }
 
