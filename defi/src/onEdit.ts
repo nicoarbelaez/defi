@@ -19,44 +19,47 @@ function onEditHandler(e: GoogleAppsScript.Events.SheetsOnEdit) {
     //   range: config.dayConfig.flatMap((day) => [day.ranges.table1, day.ranges.table2]),
     //   functions: [handleDietEdit],
     // },
-    [VariableConst.SHEET_CONFIG]: {
-      range: rangeConfig,
-      functions: [handleConfigEdit],
-    },
-    [VariableConst.SHEET_EXERCISE]: {
-      range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
-      functions: [handleExerciseEdit],
-    },
-    [VariableConst.SHEET_EXERCISE]: {
-      range: extendAndShiftRanges(config.exerciseConfig.intensificationTechniquesDropdown),
-      functions: [handleIntensificationTechniquesEdit],
-    },
-    [VariableConst.SHEET_EXERCISE.replace("1", "2")]: {
-      range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
-      functions: [handleExerciseEdit],
-    },
-    [VariableConst.SHEET_EXERCISE.replace("1", "2")]: {
-      range: extendAndShiftRanges(config.exerciseConfig.intensificationTechniquesDropdown),
-      functions: [handleIntensificationTechniquesEdit],
-    },
-    [VariableConst.SHEET_EXERCISE.replace("1", "3")]: {
-      range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
-      functions: [handleExerciseEdit],
-    },
-    [VariableConst.SHEET_EXERCISE.replace("1", "3")]: {
-      range: extendAndShiftRanges(config.exerciseConfig.intensificationTechniquesDropdown),
-      functions: [handleIntensificationTechniquesEdit],
-    },
+    [VariableConst.SHEET_CONFIG]: [{ range: rangeConfig, func: handleConfigEdit }],
+    [VariableConst.SHEET_EXERCISE]: [
+      {
+        range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
+        func: handleExerciseEdit,
+      },
+      {
+        range: extendAndShiftRanges(config.exerciseConfig.intensificationTechniquesDropdown),
+        func: handleIntensificationTechniquesEdit,
+      },
+    ],
+    [VariableConst.SHEET_EXERCISE.replace("1", "2")]: [
+      {
+        range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
+        func: handleExerciseEdit,
+      },
+      {
+        range: extendAndShiftRanges(config.exerciseConfig.intensificationTechniquesDropdown),
+        func: handleIntensificationTechniquesEdit,
+      },
+    ],
+    [VariableConst.SHEET_EXERCISE.replace("1", "3")]: [
+      {
+        range: extendAndShiftRanges(config.exerciseConfig.rangeDropdown),
+        func: handleExerciseEdit,
+      },
+      {
+        range: extendAndShiftRanges(config.exerciseConfig.intensificationTechniquesDropdown),
+        func: handleIntensificationTechniquesEdit,
+      },
+    ],
   };
 
-  const allowedRange = allowedRanges[sheetName];
-  if (!allowedRange) return;
+  const handlers = allowedRanges[sheetName];
+  if (!handlers) return;
 
-  if (
-    allowedRange.range &&
-    allowedRange.range.some((namedRange) => Utils.isCellInRange(cellA1, namedRange))
-  ) {
-    allowedRange.functions.forEach((func) => func(cellA1, sheetName));
+  for (const { range, func } of handlers) {
+    if (range && range.some((namedRange) => Utils.isCellInRange(cellA1, namedRange))) {
+      func(cellA1, sheetName);
+      break; // prioridad: primera coincidencia
+    }
   }
 }
 
