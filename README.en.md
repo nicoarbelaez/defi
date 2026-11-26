@@ -8,7 +8,7 @@ DeFi automates the workflow of a fitness-sector client who coaches people with m
 
 - **Client spreadsheet** (`defi/`): macro menu, edit triggers, dependent dropdowns (muscle group, exercise, and link), diet tables per day and meal, a shopping list, and range-based generated configuration.
 - **Internal database** (`defi-db/`): an Apps Script that publishes exercises and intensification techniques as JSON through a web app (`doGet`), cached in `PropertiesService` and refreshed with a 3500 ms debounce when the `#Ejercicios` and `Enlaces` sheets are edited.
-- **Muscle map API** (`api/`): an Express service that takes each muscle's level as a query parameter and returns a PNG or JPG of the colored body. See [`api/README.en.md`](./api/README.md).
+- **Muscle map API** (`api/`): an Express service that takes each muscle's level as a query parameter and returns a PNG or JPG of the colored body. See [`api/README.md`](./api/README.md).
 - **AppSheet app** (outside the repo): dynamic food-exchange calculation.
 
 ## Stack
@@ -77,7 +77,7 @@ docs/        # Architecture with diagrams
 ## Documentation
 
 - [`docs/architecture.en.md`](./docs/architecture.en.md): context, data flow, and folder structure.
-- [`api/README.en.md`](./api/README.md): contract and usage of the muscle map API.
+- [`api/README.md`](./api/README.md): contract and usage of the muscle map API.
 
 ## Lessons learned
 
