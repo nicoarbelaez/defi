@@ -1,78 +1,86 @@
-# TrainerElite
+# DeFi
 
-## Descripción
+[English](./README.en.md) | Español
 
-**TrainerElite** es una solución automatizada diseñada para optimizar el flujo de trabajo de un cliente del sector fitness. Este proyecto tiene como objetivo principal asesorar a personas en el logro de sus metas mediante la creación de planes alimenticios y rutinas de ejercicio personalizadas. La automatización desarrollada acelera procesos clave, permitiendo al cliente enfocarse en brindar un mejor servicio a sus usuarios.
+DeFi automatiza el flujo de trabajo de un cliente del sector fitness que asesora personas con planes alimenticios y rutinas de ejercicio. Está formado por dos proyectos de Google Apps Script en TypeScript (la lógica de la hoja de cálculo del cliente y una base de datos interna que expone JSON), una API Express que dibuja un mapa muscular y una app de AppSheet para calcular intercambios de alimentos. La app de AppSheet la construyó Nicolas Arbelaez y no vive en este repositorio.
 
-Además, como parte del proyecto, se creó una aplicación utilizando **AppSheet** como plataforma no-code para calcular el intercambio de alimentos de manera dinámica y eficiente.
+## Qué incluye
 
-## Beneficios
+- **Hoja del cliente** (`defi/`): menú de macros, triggers de edición, listas desplegables dependientes (grupo muscular, ejercicio y enlace), tablas de dieta por día y comida, lista de compras y configuración generada por rangos.
+- **Base de datos interna** (`defi-db/`): Apps Script que publica los ejercicios y técnicas de intensificación como JSON mediante una web app (`doGet`), con caché en `PropertiesService` y actualización con debounce de 3500 ms al editar las hojas `#Ejercicios` y `Enlaces`.
+- **API de mapa muscular** (`api/`): servicio Express que recibe el nivel de cada músculo por query y devuelve una imagen PNG o JPG del cuerpo coloreado. Ver [`api/README.md`](./api/README.md).
+- **App de AppSheet** (fuera del repo): cálculo dinámico de intercambios de alimentos.
 
-- **Optimización del tiempo**: Automatización de tareas repetitivas en Google Sheets para facilitar la gestión de clientes y datos.
-- **Acceso rápido a información personalizada**: Herramientas que permiten calcular intercambios alimenticios al instante.
-- **Escalabilidad**: Uso de tecnologías modernas y plataformas no-code que permiten iteraciones rápidas y fáciles actualizaciones.
+## Stack
 
-## Stack Tecnológico
+| Parte      | Tecnología                                                                                                              |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Hoja y DB  | Google Apps Script (runtime V8, zona horaria `America/Bogota`), TypeScript ^5.6.3, `@types/google-apps-script` ^1.0.85   |
+| Despliegue | `@google/clasp` ^2.4.2, pnpm                                                                                             |
+| API        | Node.js, Express ^5.1.0, sharp ^0.34.2, cheerio ^1.1.0, express-rate-limit ^8.0.1, morgan ^1.10.0, chalk ^5.3.0, Vercel |
+| No-code    | AppSheet                                                                                                                 |
 
-| Apps Script                                                                                                  | TypeScript                                                                                                                                                       | AppSheet                                                                                            |
-| ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| <img src="https://i.imgur.com/woifoON.png" title="Apps Script"  alt="Apps Script" width="auto" height="55"/> | <img src="https://github.com/devicons/devicon/blob/master/icons/typescript/typescript-original.svg" title="TypeScript" alt="TypeScript" width="55" height="55"/> | <img src="https://i.imgur.com/VFECZOg.png" title="AppSheet" alt="AppSheet" width="55" height="55"/> |
+## Requisitos
+
+- Node.js y pnpm (la API declara `pnpm@10.12.4`).
+- Una cuenta de Google con acceso a los proyectos de Apps Script.
+- `@google/clasp` instalado globalmente.
 
 ## Instalación
 
-1. **Instalar las dependencias del proyecto:**
+1. Instalar dependencias en la carpeta del proyecto que vayas a usar (`defi/`, `defi-db/` o `api/`):
 
    ```bash
    pnpm install
    ```
 
-2. **Instalar `clasp` globalmente:**
+2. Instalar `clasp` globalmente:
 
    ```bash
    pnpm install -g @google/clasp
    ```
 
-3. **Iniciar sesión en tu cuenta de Google:**
+3. Iniciar sesión en Google:
+
    ```bash
    clasp login
    ```
 
-4. **Moverse al directorio correspondiente:**
-   - Navega a `/defi-db` o `/defi` según el caso. Esto es importante para asegurar que los archivos correctos estén en la ubicación adecuada antes de realizar la carga.
+4. Entrar a `defi/` o `defi-db/` según el caso, para que los archivos correctos queden en la ubicación adecuada antes de subir.
 
-5. **Vincular tu secuencia de comandos con el ID correspondiente:**
+5. Vincular el proyecto con el ID de su script (`defi/.clasp.json` y `defi-db/.clasp.json` no se versionan):
+
    ```bash
    clasp setting scriptId "ID de secuencia de comandos"
    ```
-   Reemplaza `"ID de secuencia de comandos"` con el ID real de tu proyecto en Google Apps Script.
 
-## Uso
+## Scripts
 
-1. **Subir el proyecto a Google Apps Script:**
-   ```bash
-   pnpm push
-   ```
+| Comando      | Dónde               | Qué hace                                     |
+| ------------ | ------------------- | -------------------------------------------- |
+| `pnpm push`  | `defi/`, `defi-db/` | Sube el código a Apps Script (`clasp push`)  |
+| `pnpm pull`  | `defi/`, `defi-db/` | Baja el código de Apps Script (`clasp pull`) |
+| `pnpm dev`   | `api/`              | Servidor con nodemon                         |
+| `pnpm start` | `api/`              | Servidor con Node                            |
 
-> [!NOTE]
-> Asegúrate de que la estructura del proyecto mantenga los siguientes directorios y archivos clave:
->
-> - `/defi`: Contiene los archivos de lógica para la gestión de clientes.
-> - `/defi-db`: Maneja la base de datos interna del proyecto.
+Tras desplegar en Apps Script, ajusta la configuración según las especificaciones del cliente. Valida cada iteración de los flujos automatizados con el cliente.
 
-2. **Configuración adicional**:
-   Una vez desplegado en Google Apps Script, ajusta las configuraciones necesarias según las especificaciones del cliente.
+## Estructura
 
-## Experiencia y Aprendizajes
+```
+defi/        # Apps Script de la hoja del cliente (onOpen, onEdit, config, database, sheet, util)
+defi-db/     # Apps Script que expone la base de datos interna como JSON
+api/         # API Express del mapa muscular (desplegada en Vercel)
+docs/        # Arquitectura con diagramas
+```
 
-Durante el desarrollo de este proyecto:
+## Documentación
 
-- Aprendí a integrar **Apps Script** y **AppSheet**, maximizando el potencial de las herramientas no-code y low-code.
-- Mejoré la gestión de proyectos colaborativos mediante el uso de TypeScript para mantener un código más limpio y estructurado.
-- Desarrollé habilidades para optimizar flujos de trabajo dentro de Google Sheets y automatizar procesos repetitivos.
-- Gané experiencia en la creación de interfaces intuitivas que simplifican cálculos complejos.
+- [`docs/architecture.md`](./docs/architecture.md): contexto, flujo de datos y estructura de carpetas.
+- [`api/README.md`](./api/README.md): contrato y uso de la API de mapa muscular.
 
-> [!TIP]
-> Si eres nuevo en AppSheet, aprovecha su documentación oficial para explorar todo su potencial.
+## Aprendizajes
 
-> [!IMPORTANT]
-> Asegúrate de validar cada iteración de los flujos automatizados con el cliente para garantizar que cumplan con sus expectativas y necesidades específicas.
+- Integrar Apps Script con AppSheet aprovecha herramientas no-code y low-code sin perder control del código.
+- TypeScript mantiene ordenado el código de Apps Script en un proyecto colaborativo.
+- Automatizar flujos en Google Sheets y crear interfaces que simplifican cálculos complejos reduce el trabajo repetitivo del cliente.
